@@ -400,23 +400,15 @@ sub repo_process
 		return;
 	}
 
-	# In 'new' mode, call grm-new-repo to create the repository
+	# In 'new' mode, call repo_create_new function to create the repository
 	say STDERR "Creating new Git repository in ${\&format_output_path($config->{RECURSE_PREFIX},$localPath)}";
 
-	# Ensure all environment variables are passed to grm-new-repo
-	local %ENV = %clean_env;  # Start with the clean environment
-
-	# Make sure required variables are set for grm-new-repo
-	foreach my $key (keys %$config) {
-		$ENV{"GRM_$key"} = $config->{$key} if defined $config->{$key};
-	}
-
-	# Run grm-new-repo in the target directory
+	# Run repo_create_new in the target directory
 	my $result = indir $localPath, sub {
-		return run_sync_redir qw!grm-new-repo!;
+		return repo_create_new($localPath, $remotePath);
 	};
 
-	die "$myName: grm-new-repo failed"
+	die "$myName: repository creation failed"
 		if $result;
 
 	# New mode only creates repository, no further processing
@@ -449,8 +441,8 @@ sub repo_config
 
 	die "$myName: repo_config failed"
 		if indir $localPath,sub {
-			# Use system with a single argument to preserve signal handling
-			return system($config->{CONFIG_CMD});
+			# Execute directly as a program with no shell interpretation
+			return system(split(' ', $config->{CONFIG_CMD}));
 		};
 }
 
@@ -509,6 +501,113 @@ sub repo_set_remote
 
 	die "$myName: repo_set_remote failed"
 		if indir $localPath,sub {return remote_fallback_inv($remotePath);};
+}
+
+sub repo_create_new
+{
+	my ($localPath, $remotePath) = @_;
+
+	# Check new-mode-specific required variables
+	my @required_vars = qw(RPATH_TEMPLATE RLOGIN RPATH_BASE);
+	my @missing;
+
+	foreach my $var (@required_vars) {
+		push @missing, "GRM_$var" unless defined $config->{$var};
+	}
+
+	if (@missing) {
+		say STDERR "Creation of new remotes requires the following configuration items to be set: ".join(' ', @missing);
+		return 1; # Error code
+	}
+
+	# Ensure RLOGIN has valid protocol if set, or act as if it were ssh://localhost if blank
+	my $ssh_host;
+	my $effective_login;
+
+	if (!length($config->{RLOGIN})) {
+		# Act as if using localhost via SSH if RLOGIN is blank
+		$ssh_host = 'localhost';
+		# Use ssh://localhost internally without modifying config
+		$effective_login = 'ssh://localhost';
+	} elsif ($config->{RLOGIN} =~ /^ssh:\/\/(.+)$/) {
+		# RLOGIN has SSH protocol prefix - extract the host part for SSH command
+		$ssh_host = $1;
+		$effective_login = $config->{RLOGIN};
+	} else {
+		say STDERR "Error: RLOGIN must be in format 'ssh://[user@]host' for SSH remote creation";
+		return 3;
+	}
+
+	# Determine whether this dir is already a git repo
+	my $VIRGIN = !(-d '.git');
+
+	# Use directly passed parameters instead of calling grm externally
+	my $GRM_RPATH = "$config->{RPATH_BASE}/$remotePath";
+	$GRM_RPATH .= '.git' unless $GRM_RPATH =~ /\.git$/;
+
+	# There must be exactly one GRM-known (sub)directory and it must be .
+	if ($remotePath eq '' || getcwd() !~ /$localPath$/) {
+		say STDERR "The current directory is unregistered! Check your $config->{LIST_FN} file.";
+		return 1;
+	}
+
+	# Prompt for confirmation
+	print "About to create remote repo '$GRM_RPATH'; are you sure? ";
+	my $reply = <STDIN>;
+	chomp $reply;
+
+	if ($reply !~ /^[Yy]$/) {
+		say STDERR "(aborted)";
+		return 0;
+	}
+
+	# Create new remote repo based on remote template
+	if ($effective_login =~ /^ssh:\/\/(.+)$/) {
+		my $ssh_cmd = "xargs -0 -n 1 -- cp -na --reflink=auto '$config->{RPATH_BASE}/$config->{RPATH_TEMPLATE}'";
+		my $pid_ssh;
+
+		eval {
+			$pid_ssh = open3(my $ssh_in, '>&STDERR', '>&STDERR', 'ssh', $ssh_host, $ssh_cmd);
+			print $ssh_in "$GRM_RPATH\0";
+			close $ssh_in;
+		};
+
+		return 1 unless $pid_ssh; # Failed to create remote repository
+
+		waitpid($pid_ssh, 0);
+		return 1 if $?; # Remote repository creation failed
+	}
+
+	# Initialize git repository
+	return 1 if run_sync_redir qw(git init -q); # Git init failed
+
+	# Configure the repository if CONFIG_CMD is defined
+	if (defined $config->{CONFIG_CMD}) {
+		return 1 if run_sync_redir $config->{CONFIG_CMD}; # Config command failed
+	}
+
+	# Git remote URL
+	my $GIT_REMOTE = $effective_login.$GRM_RPATH;
+
+	# Check if remote exists, add or update it accordingly
+	my $remote_exists = system('git remote get-url origin >/dev/null 2>&1') == 0;
+
+	if ($remote_exists) {
+		# Remote exists, update it
+		return 1 if run_sync_redir qw(git remote set-url origin), $GIT_REMOTE; # Failed to update remote URL
+
+		return 1 if run_sync_redir qw(git fetch origin); # Git fetch failed
+	} else {
+		# Remote doesn't exist, add it
+		return 1 if run_sync_redir qw(git remote add -f origin), $GIT_REMOTE; # Failed to add remote
+	}
+
+	# Check out master if this was a new repository
+	if ($VIRGIN) {
+		return 1 if run_sync_redir qw(git checkout master); # Git checkout failed
+	}
+
+	return 0; # Success
 }
 
 # Spawn a child process and pass config via environment variables
