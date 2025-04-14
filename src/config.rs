@@ -57,6 +57,8 @@ impl Config {
         }
     }
     
+    // TODO Why to_string()? Tie lifetimes together to use &str everywhere?
+
     /// Get all configuration values as string key-value pairs (for environment variable passing)
     pub fn all_values(&self) -> Vec<(String, String)> {
         let mut result = Vec::new();
@@ -141,7 +143,8 @@ impl Config {
             }
         }
     }
-    
+
+    // TODO Why to_string()?
     /// Load configuration from a file
     pub fn load_from_file(&mut self, path: &Path) -> Result<()> {
         let file = File::open(path)
@@ -159,7 +162,9 @@ impl Config {
         
         Ok(())
     }
-    
+
+    // TODO Why not take &str for both? Barf on unknown keys?
+
     /// Set a configuration value from string key and value
     pub fn set_from_string(&mut self, key: String, value: String) {
         match key.as_str() {
