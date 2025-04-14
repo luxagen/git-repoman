@@ -245,9 +245,7 @@ fn process_repo_line(config: &mut Config, line: &str) -> Result<()> {
         // This is a config line
         if fields.len() >= 3 {
             // Format: * KEY * VALUE
-            let key = fields[1].trim().to_string();
-            let value = fields[2].trim().to_string();
-            config.set_from_string(key, value);
+            config.set_from_string(fields[1].trim(), fields[2].trim().to_string());
         }
         return Ok(());
     }

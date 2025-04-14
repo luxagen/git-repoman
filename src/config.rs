@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
@@ -139,7 +139,7 @@ impl Config {
                 }
                 
                 // Set configuration value
-                self.set_from_string(conf_key.to_string(), value);
+                self.set_from_string(conf_key, value);
             }
         }
     }
@@ -160,16 +160,29 @@ impl Config {
     // TODO Why to_string()?
     /// Load configuration from a file
     pub fn load_from_file(&mut self, path: &Path) -> Result<()> {
-        let file = File::open(path)
-            .with_context(|| format!("Failed to open config file: {}", path.display()))?;
+        let iter = ConfigLineIterator::from_file(path)?;
         
-        let reader = BufReader::new(file);
-        
-        for line in reader.lines() {
-            let line = line?;
+        for mut cells in iter {
+            // Error if line contains more than 3 cells
+            if cells.len() > 3 {
+                return Err(anyhow!("Config line has too many columns: {:?}", cells));
+            }
             
-            if let Some((key, value)) = parse_config_line(&line) {
-                self.set_from_string(key, value);
+            // Error if the first cell is not empty (not a config line)
+            if !cells[0].is_empty() {
+                return Err(anyhow!("Repository specification found in config file: {:?}", cells));
+            }
+            
+            // We need at least 3 cells for key and value
+            if cells.len() == 3 {
+                // Move both values out of the vector first
+                let key = std::mem::replace(&mut cells[1], String::new());
+                let value = std::mem::replace(&mut cells[2], String::new());
+                
+                // Now that we own key, we can get a reference to it
+                let key_ref = key.as_str();
+                
+                self.set_from_string(key_ref, value);
             }
         }
         
@@ -179,8 +192,8 @@ impl Config {
     // TODO Why not take &str for both? Barf on unknown keys?
 
     /// Set a configuration value from string key and value
-    pub fn set_from_string(&mut self, key: String, value: String) {
-        match key.as_str() {
+    pub fn set_from_string(&mut self, key: &str, value: String) {
+        match key {
             "CONFIG_FILENAME" => self.config_filename = value,
             "LIST_FN" => self.list_filename = value,
             "OPT_RECURSE" => self.recurse_enabled = !value.is_empty(),
@@ -199,35 +212,59 @@ impl Config {
     }
 }
 
-/// Parse a configuration line
-fn parse_config_line(line: &str) -> Option<(String, String)> {
-    let line = line.trim();
-    
-    // Skip empty lines and comments
-    if line.is_empty() || line.starts_with('#') {
-        return None;
+/// Iterator over parsed lines from a configuration file or repository file
+pub struct ConfigLineIterator {
+    content: String,
+    position: usize,
+}
+
+impl ConfigLineIterator {
+    /// Create a new iterator from a file path
+    pub fn from_file(path: &Path) -> Result<Self> {
+        // Read the entire file into memory in binary mode
+        let mut file = File::open(path)
+            .with_context(|| format!("Failed to open file: {}", path.display()))?;
+        
+        let mut content = String::new();
+        file.read_to_string(&mut content)
+            .with_context(|| format!("Failed to read file: {}", path.display()))?;
+        
+        Ok(Self {
+            content,
+            position: 0,
+        })
     }
     
-    // Split by the first non-whitespace character
-    let parts: Vec<&str> = line.splitn(3, LIST_SEPARATOR).collect();
-    
-    if parts.len() < 3 {
-        return None;
+    /// Create a new iterator from a string
+    pub fn from_string(content: String) -> Self {
+        Self {
+            content,
+            position: 0,
+        }
     }
+}
+
+impl Iterator for ConfigLineIterator {
+    type Item = Vec<String>;
     
-    // First part should be empty or just whitespace
-    let first = parts[0].trim();
-    if !first.is_empty() {
-        return None;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.position >= self.content.len() {
+            return None;
+        }
+        
+        let remainder = &self.content[self.position..];
+        let (cells, new_remainder) = parse_config_line(remainder);
+        
+        // Update position for next iteration
+        self.position = self.content.len() - new_remainder.len();
+        
+        // Skip empty lines and comments (they return empty cell vectors)
+        if cells.is_empty() {
+            return self.next();
+        }
+        
+        Some(cells)
     }
-    
-    // Second part is the key
-    let key = parts[1].trim();
-    
-    // Third part is the value
-    let value = parts[2].trim();
-    
-    Some((key.to_string(), value.to_string()))
 }
 
 /// Skip leading whitespace in the input string (excluding CR and LF).
@@ -270,7 +307,7 @@ fn skip_whitespace(input: &str) -> &str {
 /// A tuple containing:
 /// - The parsed cell as a String (may be empty)
 /// - The remaining unparsed portion of the input
-pub fn parse_cell(input: &str) -> (String, &str) {
+pub fn parse_config_cell(input: &str) -> (String, &str) {
     // Skip leading whitespace
     let input = skip_whitespace(input);
     
@@ -344,14 +381,14 @@ pub fn parse_cell(input: &str) -> (String, &str) {
 /// A tuple containing:
 /// - Vector of parsed cells (may include empty strings)
 /// - The remaining unparsed portion of the input (after consuming line ending if present)
-pub fn parse_line(input: &str) -> (Vec<String>, &str) {
+pub fn parse_config_line(input: &str) -> (Vec<String>, &str) {
     // Skip empty lines
     if input.is_empty() {
         return (Vec::new(), input);
     }
     
     // Parse the first cell to check for comments (this will skip whitespace)
-    let (first_cell, first_remainder) = parse_cell(input);
+    let (first_cell, first_remainder) = parse_config_cell(input);
     
     // Check if it's a comment after skipping whitespace
     if first_cell.starts_with('#') {
@@ -374,7 +411,7 @@ pub fn parse_line(input: &str) -> (Vec<String>, &str) {
         // Skip past the separator and continue parsing
         remainder = &remainder[LIST_SEPARATOR.len_utf8()..];
         
-        let (cell, new_remainder) = parse_cell(remainder);
+        let (cell, new_remainder) = parse_config_cell(remainder);
         
         // Check if this cell is a comment
         if cell.starts_with('#') {
