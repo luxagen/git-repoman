@@ -144,6 +144,19 @@ impl Config {
         }
     }
 
+    // This should:
+    // - load the entire file into RAM in binary mode (no translation)
+    // - call parse_config_line until the content is exhausted
+    // - treat a single-element vector as a key with an empty value
+    // - set configuration values using set_from_string
+    //
+    // - one empty cell: skip
+    // - one non-empty cell: repo with local/GM defaulting
+    // - two cells: repo with local/GM override
+    // - three cells: repo with local/GM override and remote
+
+    // - return an error if the file cannot be opened or read
+    // 
     // TODO Why to_string()?
     /// Load configuration from a file
     pub fn load_from_file(&mut self, path: &Path) -> Result<()> {
