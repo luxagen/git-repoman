@@ -161,7 +161,9 @@ impl Config {
     /// Load configuration from a file
     pub fn load_from_file(&mut self, path: &Path) -> Result<()> {
         let iter = ConfigLineIterator::from_file(path)?;
-        
+
+        // TODO sort out this tree
+
         for mut cells in iter {
             // Error if line contains more than 3 cells
             if cells.len() > 3 {
