@@ -133,9 +133,9 @@ fn process_repo(config: &Config, repo: &RepoTriple) -> Result<()> {
         return Ok(());
     }
     
-    // No longer need the configure_repo helper as we'll use direct conditional checks
-
     let mut needs_configure = false;
+
+    // Why isn't this running for Moonlighting?!
 
     // Process based on path state
     if !path.exists() {
