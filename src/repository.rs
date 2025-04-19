@@ -116,6 +116,8 @@ pub fn configure_repo(repo: &RepoTriple, config: &Config) -> Result<()> {
     execute_config_cmd(repo, config)
 }
 
+// TODO: figure out whether to always fetch
+
 /// Update the remote URL for a repository
 pub fn set_remote(repo: &RepoTriple) -> Result<()> {
     let status = process::run_command_silent(repo.local_path, &["git", "remote", "set-url", "origin", repo.remote_url])?;
@@ -127,6 +129,8 @@ pub fn set_remote(repo: &RepoTriple) -> Result<()> {
     }
     Ok(())
 }
+
+// TODO: figure out whether this will work for both new and clone
 
 /// Checkout the default branch after cloning
 pub fn check_out(local_path: &str) -> Result<()> {
