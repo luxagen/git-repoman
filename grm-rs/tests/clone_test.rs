@@ -10,26 +10,41 @@ fn test_grm_clone() -> Result<(), Box<dyn std::error::Error>> {
     // Setup test environment
     let test_dir = setup_test_environment()?;
     
-    // Create upstream repository
-    create_upstream_repository(&test_dir)?;
+    // Always clean up, even if the test fails
+    let result = std::panic::catch_unwind(|| -> Result<(), Box<dyn std::error::Error>> {
+        // Create upstream repository
+        create_upstream_repository(&test_dir)?;
+        
+        // Run grm clone command
+        let output = run_grm_clone(&test_dir)?;
+        
+        // Verify results
+        verify_clone_results(&test_dir, &output)?;
+        
+        Ok(())
+    });
     
-    // Run grm clone command
-    let output = run_grm_clone(&test_dir)?;
+    // Clean up test directories
+    cleanup(&test_dir)?;
     
-    // Verify results
-    verify_clone_results(&test_dir, &output)?;
-    
-    // Cleanup (optional - uncomment if you want tests to clean up after themselves)
-    // cleanup(&test_dir)?;
+    // Re-panic if there was an error
+    if let Err(e) = result {
+        std::panic::resume_unwind(e);
+    }
     
     Ok(())
 }
 
 fn setup_test_environment() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    // Create base test directory
+    // Create base test directory with fixed name
     let current_dir = env::current_dir()?;
-    let timestamp = chrono::Local::now().format("%Y%m%d%H%M%S").to_string();
-    let test_dir = current_dir.join(format!("test_grm_clone_{}", timestamp));
+    let test_dir = current_dir.join("test_grm_clone");
+    
+    // Remove if already exists
+    if test_dir.exists() {
+        fs::remove_dir_all(&test_dir)?;
+    }
+    
     fs::create_dir_all(&test_dir)?;
     
     // Create .grm.conf file
