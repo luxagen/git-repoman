@@ -1,3 +1,6 @@
+﻿// GRM - Git Repository Manager
+// Copyright © luxagen, 2025-present
+
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};

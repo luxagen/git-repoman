@@ -1,3 +1,6 @@
+﻿// GRM - Git Repository Manager
+// Copyright © luxagen, 2025-present
+
 use anyhow::{Result, anyhow};
 use gix_url::{Scheme, Url};
 use bstr::BStr;

@@ -1,3 +1,6 @@
+﻿// GRM - Git Repository Manager
+// Copyright © luxagen, 2025-present
+
 use std::process::{Command, Stdio};
 use anyhow::{Context, Result, anyhow};
 

@@ -1,3 +1,6 @@
+﻿// GRM - Git Repository Manager
+// Copyright © luxagen, 2025-present
+
 #![allow(unused_imports)]
 
 use std::env;

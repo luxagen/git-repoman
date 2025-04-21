@@ -1,3 +1,6 @@
+﻿// GRM - Git Repository Manager
+// Copyright © luxagen, 2025-present
+
 use std::io::Write;
 use std::path::Path;
 use std::process::Command;

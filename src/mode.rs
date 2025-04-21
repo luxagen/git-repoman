@@ -1,3 +1,6 @@
+﻿// GRM - Git Repository Manager
+// Copyright © luxagen, 2025-present
+
 use clap::ValueEnum;
 use once_cell::sync::OnceCell;
 
