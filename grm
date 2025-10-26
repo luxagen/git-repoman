@@ -425,7 +425,7 @@ sub repo_clone_nocheckout
 		if $config->{OPT_DEBUG_PRIMITIVES};
 
 	die "$myName: repo_clone_nocheckout failed"
-		if run_sync_redir qw! git clone --no-checkout !,$remotePath,$localPath;
+		if run_sync_redir qw! git clone --recurse-submodules --no-checkout !,$remotePath,$localPath;
 }
 
 sub repo_config
