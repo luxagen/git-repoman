@@ -364,7 +364,10 @@ fn get_remote_url(config: &Config, remote_rel_path: &str) -> String {
 }
 
 fn main() -> Result<()> {
-    std::env::set_var("MSYS_NO_PATHCONV", "1");
+	unsafe
+	{
+		std::env::set_var("MSYS_NO_PATHCONV", "1");
+	}
     
     // Save the original working directory to use as a tree filter (like $treeFilter in Perl)
     let tree_filter = env::current_dir()?;
