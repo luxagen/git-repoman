@@ -96,6 +96,8 @@ impl From<PrimaryMode> for Operations {
             },
             PrimaryMode::New => {
                 ops.new = true;
+                ops.configure = true; // New includes configuration
+                ops.set_remote = true; // New includes setting remote
                 ops.recurse = true;
             },
         }

@@ -11,30 +11,30 @@ use crate::LIST_SEPARATOR;
 pub struct Config {
     /// Configuration filename (.grm.conf by default)
     pub config_filename: String,
-    /// List filename (.grm.repos by default)
+    /// List filename
     pub list_filename: String,
     /// Whether recursion is enabled (1 by default)
     pub recurse_enabled: bool,
     /// Remote login information (e.g., ssh://user@host)
-    pub rlogin: Option<String>,
+    pub rlogin: String,
     /// Remote path base directory
-    pub rpath_base: Option<String>,
+    pub rpath_base: String,
     /// Remote path template for new repositories
-    pub rpath_template: Option<String>,
+    pub rpath_template: String,
     /// Local base directory for repositories
-    pub local_dir: Option<String>,
+    pub local_dir: String,
     /// Media base directory
-    pub gm_dir: Option<String>,
+    pub gm_dir: String,
     /// Remote directory
-    pub remote_dir: Option<String>,
+    pub remote_dir: String,
     /// Git arguments when in git mode
-    pub git_args: Option<String>,
+    pub git_args: String,
     /// Command to execute for configuration
-    pub config_cmd: Option<String>,
+    pub config_cmd: String,
     /// Recurse prefix for path display
     pub recurse_prefix: String,
     /// Tree filter path for filtering repositories to current subtree
-    pub tree_filter: Option<String>,
+    pub tree_filter: String,
 }
 
 impl Config {
@@ -42,18 +42,18 @@ impl Config {
     pub fn new() -> Self {
         Self {
             config_filename: ".grm.conf".to_string(),
-            list_filename: ".grm.repos".to_string(),
+            list_filename: String::new(),
             recurse_enabled: true,
-            rlogin: None,
-            rpath_base: None,
-            rpath_template: None,
-            local_dir: None,
-            gm_dir: None,
-            remote_dir: None,
-            git_args: None,
-            config_cmd: None,
+            rlogin: String::new(),
+            rpath_base: String::new(),
+            rpath_template: String::new(),
+            local_dir: String::new(),
+            gm_dir: String::new(),
+            remote_dir: String::new(),
+            git_args: String::new(),
+            config_cmd: String::new(),
             recurse_prefix: String::new(),
-            tree_filter: None,
+            tree_filter: String::new(),
         }
     }
     
@@ -68,44 +68,44 @@ impl Config {
         result.push(("LIST_FN".to_string(), self.list_filename.clone()));
         result.push(("OPT_RECURSE".to_string(), if self.recurse_enabled { "1".to_string() } else { String::new() }));
         
-        if let Some(ref v) = self.rlogin {
-            result.push(("RLOGIN".to_string(), v.clone()));
+        if !self.rlogin.is_empty() {
+            result.push(("RLOGIN".to_string(), self.rlogin.clone()));
         }
         
-        if let Some(ref v) = self.rpath_base {
-            result.push(("RPATH_BASE".to_string(), v.clone()));
+        if !self.rpath_base.is_empty() {
+            result.push(("RPATH_BASE".to_string(), self.rpath_base.clone()));
         }
         
-        if let Some(ref v) = self.rpath_template {
-            result.push(("RPATH_TEMPLATE".to_string(), v.clone()));
+        if !self.rpath_template.is_empty() {
+            result.push(("RPATH_TEMPLATE".to_string(), self.rpath_template.clone()));
         }
         
-        if let Some(ref v) = self.local_dir {
-            result.push(("LOCAL_DIR".to_string(), v.clone()));
+        if !self.local_dir.is_empty() {
+            result.push(("LOCAL_DIR".to_string(), self.local_dir.clone()));
         }
         
-        if let Some(ref v) = self.gm_dir {
-            result.push(("GM_DIR".to_string(), v.clone()));
+        if !self.gm_dir.is_empty() {
+            result.push(("GM_DIR".to_string(), self.gm_dir.clone()));
         }
         
-        if let Some(ref v) = self.remote_dir {
-            result.push(("REMOTE_DIR".to_string(), v.clone()));
+        if !self.remote_dir.is_empty() {
+            result.push(("REMOTE_DIR".to_string(), self.remote_dir.clone()));
         }
         
-        if let Some(ref v) = self.git_args {
-            result.push(("GIT_ARGS".to_string(), v.clone()));
+        if !self.git_args.is_empty() {
+            result.push(("GIT_ARGS".to_string(), self.git_args.clone()));
         }
         
-        if let Some(ref v) = self.config_cmd {
-            result.push(("CONFIG_CMD".to_string(), v.clone()));
+        if !self.config_cmd.is_empty() {
+            result.push(("CONFIG_CMD".to_string(), self.config_cmd.clone()));
         }
         
         if !self.recurse_prefix.is_empty() {
             result.push(("RECURSE_PREFIX".to_string(), self.recurse_prefix.clone()));
         }
         
-        if let Some(ref v) = self.tree_filter {
-            result.push(("TREE_FILTER".to_string(), v.clone()));
+        if !self.tree_filter.is_empty() {
+            result.push(("TREE_FILTER".to_string(), self.tree_filter.clone()));
         }
         
         result
@@ -157,22 +157,34 @@ impl Config {
 
     // - return an error if the file cannot be opened or read
     // 
-    // TODO Why to_string()?
+
     /// Load configuration from a file
     pub fn load_from_file(&mut self, path: &Path) -> Result<()> {
         let iter = ConfigLineIterator::from_file(path)?;
 
         // TODO sort out this tree
 
-        for mut cells in iter {
-            // Error if line contains more than 3 cells
-            if cells.len() > 3 {
-                return Err(anyhow!("Config line has too many columns: {:?}", cells));
-            }
+        for line_result in iter {
+            // First handle any parsing errors
+            let mut cells = match line_result {
+                Ok(cells) => cells,
+                Err(err) => return Err(err.context("Error parsing configuration file"))
+            };
             
+            // Error if line contains more than 3 cells
+            if cells.len() != 3 {
+                return Err(anyhow!("Config line has {} columns instead of the required 3", cells.len()));
+            }
+
             // Error if the first cell is not empty (not a config line)
             if !cells[0].is_empty() {
                 return Err(anyhow!("Repository specification found in config file: {:?}", cells));
+            }
+
+            // Only need to check that key (cells[1]) is not empty
+            // cells[2] can be empty (which means the config value should be emptied)
+            if cells[1].is_empty() {
+                return Err(anyhow!("Config line has empty key or value: {:?}", cells));
             }
             
             // We need at least 3 cells for key and value
@@ -191,24 +203,22 @@ impl Config {
         Ok(())
     }
 
-    // TODO Why not take &str for both? Barf on unknown keys?
-
     /// Set a configuration value from string key and value
     pub fn set_from_string(&mut self, key: &str, value: String) {
         match key {
             "CONFIG_FILENAME" => self.config_filename = value,
             "LIST_FN" => self.list_filename = value,
             "OPT_RECURSE" => self.recurse_enabled = !value.is_empty(),
-            "RLOGIN" => self.rlogin = Some(value),
-            "RPATH_BASE" => self.rpath_base = Some(value),
-            "RPATH_TEMPLATE" => self.rpath_template = Some(value),
-            "LOCAL_DIR" => self.local_dir = Some(value),
-            "GM_DIR" => self.gm_dir = Some(value),
-            "REMOTE_DIR" => self.remote_dir = Some(value),
-            "GIT_ARGS" => self.git_args = Some(value),
-            "CONFIG_CMD" => self.config_cmd = Some(value),
+            "RLOGIN" => self.rlogin = value,
+            "RPATH_BASE" => self.rpath_base = value,
+            "RPATH_TEMPLATE" => self.rpath_template = value,
+            "LOCAL_DIR" => self.local_dir = value,
+            "GM_DIR" => self.gm_dir = value,
+            "REMOTE_DIR" => self.remote_dir = value,
+            "GIT_ARGS" => self.git_args = value,
+            "CONFIG_CMD" => self.config_cmd = value,
             "RECURSE_PREFIX" => self.recurse_prefix = value,
-            "TREE_FILTER" => self.tree_filter = Some(value),
+            "TREE_FILTER" => self.tree_filter = value,
             _ => {} // Ignore unknown keys
         }
     }
@@ -236,36 +246,37 @@ impl ConfigLineIterator {
             position: 0,
         })
     }
-    
-    /// Create a new iterator from a string
-    pub fn from_string(content: String) -> Self {
-        Self {
-            content,
-            position: 0,
-        }
-    }
 }
 
 impl Iterator for ConfigLineIterator {
-    type Item = Vec<String>;
+    type Item = Result<Vec<String>>;
     
     fn next(&mut self) -> Option<Self::Item> {
+        // If we've reached the end of the content, stop iteration
         if self.position >= self.content.len() {
             return None;
         }
         
         let remainder = &self.content[self.position..];
-        let (cells, new_remainder) = parse_config_line(remainder);
+        let parse_result = parse_config_line(remainder);
         
-        // Update position for next iteration
-        self.position = self.content.len() - new_remainder.len();
-        
-        // Skip empty lines and comments (they return empty cell vectors)
-        if cells.is_empty() {
-            return self.next();
+        match parse_result {
+            Ok((cells, new_remainder)) => {
+                // Update position for next iteration
+                self.position = self.content.len() - new_remainder.len();
+                
+                // Skip empty lines and comments (they return empty cell vectors)
+                if cells.is_empty() {
+                    return self.next();
+                }
+                
+                Some(Ok(cells))
+            },
+            Err(err) => {
+                // Simply propagate the error directly
+                Some(Err(err))
+            }
         }
-        
-        Some(cells)
     }
 }
 
@@ -295,9 +306,14 @@ fn skip_whitespace(input: &str) -> &str {
 /// - Preserves escaped whitespace 
 /// - Stops at unescaped line endings (CR, LF) or separator characters
 /// - Trims trailing whitespace from the right
+/// - Treats a trailing backslash at end of line as an error
 ///
 /// If the cell cannot be parsed (empty input, immediate delimiter, etc.), 
 /// an empty string is returned.
+///
+/// # Error
+/// Returns an error when a trailing backslash is found at the end of the line 
+/// with no character to escape.
 ///
 /// Note: Escaped whitespace (e.g., `\ `) is preserved and never trimmed, only unescaped
 /// trailing whitespace is removed.
@@ -306,16 +322,16 @@ fn skip_whitespace(input: &str) -> &str {
 /// - `input`: The input string to parse
 ///
 /// # Returns
-/// A tuple containing:
-/// - The parsed cell as a String (may be empty)
-/// - The remaining unparsed portion of the input
-pub fn parse_config_cell(input: &str) -> (String, &str) {
+/// A Result containing:
+/// - On success: A tuple with the parsed cell and remaining input
+/// - On error: An anyhow error explaining the issue
+pub fn parse_config_cell(input: &str) -> Result<(String, &str)> {
     // Skip leading whitespace
     let input = skip_whitespace(input);
     
     // If we hit a newline, CR, separator, or empty string while skipping whitespace
     if input.is_empty() || input.starts_with('\n') || input.starts_with('\r') || input.starts_with(LIST_SEPARATOR) {
-        return (String::new(), input);
+        return Ok((String::new(), input));
     }
     
     // Start building the cell content
@@ -337,7 +353,12 @@ pub fn parse_config_cell(input: &str) -> (String, &str) {
         input = &input[c.len_utf8()..];
         
         // Handle escaping
-        if c == '\\' && !input.is_empty() {
+        if c == '\\' {
+            if input.is_empty() {
+                // Error: backslash at end of line with nothing to escape
+                return Err(anyhow!("Trailing backslash at end of line with nothing to escape"));
+            }
+            
             // Get the escaped character
             let escaped = input.chars().next().unwrap();
             
@@ -362,7 +383,7 @@ pub fn parse_config_cell(input: &str) -> (String, &str) {
     cell.truncate(rtrim_pos);
     
     // Return the cell directly, without additional scanning or copying
-    (cell, input)
+    Ok((cell, input))
 }
 
 /// Parse a line into a vector of cells and the remaining unparsed portion.
@@ -380,21 +401,21 @@ pub fn parse_config_cell(input: &str) -> (String, &str) {
 /// - `input`: The input string to parse
 ///
 /// # Returns
-/// A tuple containing:
-/// - Vector of parsed cells (may include empty strings)
-/// - The remaining unparsed portion of the input (after consuming line ending if present)
-pub fn parse_config_line(input: &str) -> (Vec<String>, &str) {
+/// A Result containing:
+/// - On success: A tuple with parsed cells and remaining input
+/// - On error: An error from cell parsing (like trailing backslash)
+pub fn parse_config_line(input: &str) -> Result<(Vec<String>, &str)> {
     // Skip empty lines
     if input.is_empty() {
-        return (Vec::new(), input);
+        return Ok((Vec::new(), input));
     }
     
     // Parse the first cell to check for comments (this will skip whitespace)
-    let (first_cell, first_remainder) = parse_config_cell(input);
+    let (first_cell, first_remainder) = parse_config_cell(input)?;
     
     // Check if it's a comment after skipping whitespace
     if first_cell.starts_with('#') {
-        return (Vec::new(), input);
+        return Ok((Vec::new(), input));
     }
     
     // Start building cells with the first cell we already parsed
@@ -413,7 +434,14 @@ pub fn parse_config_line(input: &str) -> (Vec<String>, &str) {
         // Skip past the separator and continue parsing
         remainder = &remainder[LIST_SEPARATOR.len_utf8()..];
         
-        let (cell, new_remainder) = parse_config_cell(remainder);
+        let parse_result = parse_config_cell(remainder);
+        
+        // Handle errors in cell parsing
+        if let Err(err) = parse_result {
+            return Err(err);
+        }
+        
+        let (cell, new_remainder) = parse_result?;
         
         // Check if this cell is a comment
         if cell.starts_with('#') {
@@ -449,7 +477,7 @@ pub fn parse_config_line(input: &str) -> (Vec<String>, &str) {
         _ => {} // No line ending but we're done parsing cells
     }
     
-    (cells, remainder)
+    Ok((cells, remainder))
 }
 
 /// Slice a string from the current position to the end of the line
