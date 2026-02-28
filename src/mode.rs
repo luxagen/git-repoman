@@ -124,14 +124,21 @@ impl std::fmt::Display for PrimaryMode {
 /// Global OPERATIONS initialized once at startup
 static OPERATIONS: OnceCell<Operations> = OnceCell::new();
 
+/// Global MODE_STRING to store the actual mode string
+static MODE_STRING: OnceCell<String> = OnceCell::new();
+
 /// Initialize the global operations - call this ONCE at startup
 pub fn initialize_operations(primary_mode: PrimaryMode) {
     // Create Operations from the primary mode
     let operations = Operations::from(primary_mode);
     
+    // Store the original mode string for later reference
+    let mode_string = primary_mode.to_string();
+    
     // Initialize the global operations once
     // If this fails, it means initialize_operations was called more than once
     OPERATIONS.set(operations).expect("OPERATIONS already initialized");
+    MODE_STRING.set(mode_string).expect("MODE_STRING already initialized");
 }
 
 /// Get a reference to the operations
@@ -140,9 +147,8 @@ pub fn get_operations() -> &'static Operations {
     OPERATIONS.get().expect("OPERATIONS not initialized")
 }
 
-impl Operations {
-    /// Check if this is a listing mode
-    pub fn is_listing_mode(&self) -> bool {
-        self.list_rrel || self.list_rurl || self.list_lrel
-    }
+/// Get the original mode string
+/// Panics if initialize_operations wasn't called first
+pub fn get_mode_string() -> &'static str {
+    MODE_STRING.get().expect("MODE_STRING not initialized")
 }
