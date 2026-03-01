@@ -289,30 +289,6 @@ pub fn run_git_command(local_path: &str, args_str: &str) -> Result<()> {
     run_git_cmd_internal(local_path, &args)
 }
 
-/// Shell command structure
-struct ShellCommand {
-    executable: String,
-    args: Vec<String>,
-}
-
-/// Detect what shell to use based on environment
-fn detect_shell_command(cmd: &str) -> Result<ShellCommand> {
-    // First, try to use the SHELL environment variable
-    if let Ok(shell_path) = std::env::var("SHELL") {
-        // User has a SHELL variable defined, use it directly
-        return Ok(ShellCommand {
-            executable: shell_path,
-            args: vec!["-c".to_string(), cmd.to_string()],
-        });
-    }
-    
-    // Default for all platforms if SHELL is not set
-    Ok(ShellCommand {
-        executable: "sh".to_string(),
-        args: vec!["-c".to_string(), cmd.to_string()],
-    })
-}
-
 /// Execute a CONFIG_CMD in the specified directory
 pub fn execute_config_cmd(repo: &RepoTriple, config: &Config) -> Result<()> {
     let config_cmd = &config.config_cmd;
@@ -321,22 +297,18 @@ pub fn execute_config_cmd(repo: &RepoTriple, config: &Config) -> Result<()> {
     }
 
     // Use shell-escape crate to robustly escape the media_path argument for shell usage
-    use shell_escape::unix::escape;
-    let escaped_media_path = escape(repo.media_path.into());
-    let full_command = format!("{} {}", config_cmd, escaped_media_path);
-    
-    // Try to detect the shell environment
-    let shell_cmd = detect_shell_command(&full_command)?;
-    
-    // Execute through the detected shell
-    let status = Command::new(shell_cmd.executable)
-        .args(&shell_cmd.args)
+    let inner_cmd = format!("{config_cmd} {}", shell_escape::unix::escape(repo.media_path.into()));
+
+	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
+	// process is MinGW or Cygwin; we must rely on `sh` being on the path
+    let status = Command::new("sh".to_string())
+        .args(vec!["-c".to_string(), inner_cmd.clone()])
         .current_dir(repo.local_path)
         .stdin(std::process::Stdio::inherit())
         .stdout(std::process::Stdio::inherit())
         .stderr(std::process::Stdio::inherit())
         .status()
-        .with_context(|| format!("Failed to execute CONFIG_CMD: {}", full_command))?;
+        .with_context(|| format!("Failed to execute CONFIG_CMD: {}", inner_cmd))?;
     
     if !status.success() {
         return Err(anyhow!("Config command failed with exit code: {:?}", status));
