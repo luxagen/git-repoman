@@ -21,9 +21,11 @@ mod repository;
 mod mode;
 mod config;
 mod remote_url;
+mod listfile;
 
 use mode::{PrimaryMode, initialize_operations, get_operations, get_mode_string};
-use config::{Config, ConfigLineIterator};
+use config::Config;
+use listfile::LineIterator;
 
 /// Separator character used in listfiles
 const LIST_SEPARATOR: char = '*';
@@ -86,6 +88,7 @@ fn determine_repo_state(path: &str) -> Result<RepoState> {
 /// Process a single repository
 #[allow(unused_assignments)] // Stupid compiler
 fn process_repo(config: &Config, repo: &RepoTriple) -> Result<()> {
+//	eprintln!("{}", );
     // Get operations
     let operations = get_operations();
 
@@ -108,7 +111,7 @@ fn process_repo(config: &Config, repo: &RepoTriple) -> Result<()> {
 
     let mut needs_checkout = false;
 
-    print!("{}: ", &repo.local_path.bright_white());
+    println!("{}", &repo.local_path.bright_white());
 
     // State machine for the repository
     loop {
@@ -171,19 +174,24 @@ fn process_repo(config: &Config, repo: &RepoTriple) -> Result<()> {
 /// Process a repository listfile
 fn process_listfile(config: &mut Config, list_path: &Path) -> Result<()> {
     // Use ConfigLineIterator to handle file reading and line parsing
-    let iter = ConfigLineIterator::from_file(list_path)?;
+    let iter = listfile::LineIterator::from_file(list_path)?;
     
     // Process each parsed line
     for line_result in iter {
         // Handle parsing errors
-        let cells = match line_result {
+        let mut cells = match line_result {
             Ok(cells) => cells,
             Err(err) => {
                 eprintln!("Error parsing line: {}", err);
                 continue;
             }
         };
-        
+
+		while cells.len() < 3
+		{
+			cells.push("".to_string());
+		}
+
         // Skip empty lines and comments (already handled by ConfigLineIterator)
         if cells.is_empty() {
             continue;
@@ -236,10 +244,20 @@ fn process_repo_line(config: &mut Config, cells: Vec<String>) -> Result<()> {
         return Ok(());
     }
 
+	eprintln!(
+		"#CONFIG RB_{}_ LD_{}_ GD_{}_ RD_{}_",
+		config.rpath_base,
+		config.local_dir,
+		config.gm_dir,
+		config.remote_dir);
+
     // Extract raw path components from cells
     let (remote, local, media) = extract_repo_paths(&cells);
+	eprintln!("!P1 R:_{}_ L:_{}_ M:_{}_", remote, local, media);
     let (remote, local, media) = qualify_repo_paths(&config, &remote, &local, &media);
+	eprintln!("!P2 R:_{}_ L:_{}_ M:_{}_", remote, local, media);
     let remote_url = get_remote_url(&config, &remote);
+	eprintln!("!P3 R:_{}_ L:_{}_ M:_{}_ U:_{}_", remote, local, media, remote_url);
 
     let rt = RepoTriple::new(
         &remote,
@@ -347,9 +365,24 @@ fn qualify_repo_paths(config: &Config, remote: &str, local: &str, media: &str) -
 
 /// Get formatted remote URL based on configuration and remote relative path
 fn get_remote_url(config: &Config, remote_rel_path: &str) -> String {
+	if config.rpath_base.is_empty()
+	{
+		panic!("RPATH_BASE must exist!");
+	}
+
+	if config.remote_dir.is_empty()
+	{
+		panic!("REMOTE_DIR must exist!");
+	}
+
+	if config.rlogin.is_empty()
+	{
+		panic!("RLOGIN must exist!");
+	}
+
     // Get the base path, defaulting to empty string if not set
     let base_path = &config.rpath_base;
-    
+
     // Use cat_paths to handle paths consistently
     let full_repo_path = cat_paths(&config.remote_dir, remote_rel_path);
     
@@ -409,7 +442,7 @@ fn main() -> Result<()> {
     
     // Store original working directory for filtering
     config.tree_filter = tree_filter_str;
-    
+   
     // Process listfile
     if list_path.exists() {
         if let Err(err) = process_listfile(&mut config, &list_path) {

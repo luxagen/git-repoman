@@ -20,8 +20,6 @@ pub struct RepoTriple<'a> {
 impl<'a> RepoTriple<'a> {
     /// Create a new RepoTriple with remote_path, local_path, and media_path; remote_url is initialized to empty
     pub fn new(remote_path: &'a str, local_path: &'a str, media_path: &'a str, remote_url: &'a str) -> Self {
-        use crate::get_remote_url;
-
         Self {
             remote_path,
             remote_url,
@@ -30,7 +28,6 @@ impl<'a> RepoTriple<'a> {
         }
     }
 }
-
 
 /// Check if directory is a Git repository root
 pub fn is_dir_repo_root(local_path: &str) -> Result<bool> {
@@ -289,7 +286,7 @@ pub fn run_git_command(local_path: &str, args_str: &str) -> Result<()> {
     run_git_cmd_internal(local_path, &args)
 }
 
-/// Execute a CONFIG_CMD in the specified directory
+/// Execute the CONFIG_CMD in the specified directory
 pub fn execute_config_cmd(repo: &RepoTriple, config: &Config) -> Result<()> {
     let config_cmd = &config.config_cmd;
     if config_cmd.is_empty() {
