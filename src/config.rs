@@ -246,15 +246,3 @@ impl Config {
         }
     }
 }
-
-/// Slice a string from the current position to the end of the line
-/// Returns a substring from the current position to the next line ending character,
-/// or an empty slice at the end of the string if no line ending is found.
-fn slice_to_eol(input: &str) -> &str {
-    for (i, c) in input.char_indices() {
-        if c == '\r' || c == '\n' {
-            return &input[i..];
-        }
-    }
-    &input[input.len()..]
-}
