@@ -42,32 +42,35 @@ pub fn init_new(local_path: &str) -> Result<()> {
     Ok(())
 }
 
+fn run_git_cmd(local_path: &str, args: &[&str], operation_for_warning: Option<&str>) -> Result<()> {
+	let mut cmd_args = vec!["git"];
+	cmd_args.extend(args);
+
+	let status = invoke::run_in_dir(local_path, &cmd_args)?;
+	if status != 0 {
+		if let Some(operation) = operation_for_warning {
+			println!("Warning: git {} failed with code {}", operation, status);
+			return Ok(());
+		}
+
+		return Err(anyhow!(
+			"Git command '{}' failed with exit code: {}",
+			args.join(" "),
+			status
+		));
+	}
+
+	Ok(())
+}
+
 /// Run a git command and expect success (internal version)
 fn run_git_cmd_internal(local_path: &str, args: &[&str]) -> Result<()> {
-    let mut cmd_args = vec!["git"];
-    cmd_args.extend(args);
-    
-    let status = invoke::run_in_dir(local_path, &cmd_args)?;
-    
-    if status != 0 {
-        return Err(anyhow!("Git command '{}' failed with exit code: {}", 
-                           args.join(" "), status));
-    }
-    
-    Ok(())
+	run_git_cmd(local_path, args, None)
 }
 
 /// Run a git command and print a warning on failure instead of returning an error
 fn run_git_command_with_warning(local_path: &str, args: &[&str], operation: &str) -> Result<()> {
-    let mut cmd_args = vec!["git"];
-    cmd_args.extend(args);
-    
-    let status = invoke::run_in_dir(local_path, &cmd_args)?;
-    if status != 0 {
-        println!("Warning: git {} failed with code {}", operation, status);
-    }
-    
-    Ok(())
+	run_git_cmd(local_path, args, Some(operation))
 }
 
 /// Clone a repository without checking it out
