@@ -7,6 +7,7 @@ use std::path::Path;
 use anyhow::{Context, Result, anyhow};
 
 use crate::LIST_SEPARATOR;
+use crate::ListfileLine;
 
 /// Iterator over parsed lines from a configuration file or repository file
 pub struct LineIterator {
@@ -109,16 +110,6 @@ impl Iterator for LineIterator {
 		self.position = new_pos;
 		Some(line)
     }
-}
-
-pub enum ListfileLine
-{
-	Empty,
-	Whitespace,
-	Comment  {content: String},
-	Config   {key: String, value: String},
-	RepoSpec {local: String, remote: String, param: String},
-	Malformed,
 }
 
 /// Consume a line ending (CR, LF, or CRLF) from the start of input.

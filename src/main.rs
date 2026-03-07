@@ -30,6 +30,16 @@ use listfile::LineIterator;
 /// Separator character used in listfiles
 const LIST_SEPARATOR: char = '*';
 
+pub enum ListfileLine
+{
+	Empty,
+	Whitespace,
+	Comment  {content: String},
+	Config   {key: String, value: String},
+	RepoSpec {local: String, remote: String, param: String},
+	Malformed,
+}
+
 /// Git Repository Manager - Rust implementation
 #[derive(Parser, Debug)]
 #[clap(author, version, about)]
@@ -170,8 +180,6 @@ fn process_repo(config: &Config, repo: &RepoTriple) -> Result<()> {
         return Ok(()); // Job done
     }
 }
-
-use crate::listfile::ListfileLine;
 
 /// Process a repository listfile
 fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
