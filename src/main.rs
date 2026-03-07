@@ -154,7 +154,7 @@ fn process_repo(config: &Config, repo: &FullRepoSpec) -> Result<()> {
         };
 
         if operations.git {
-            repository::run_git_command(repo.local_path, &config.git_args)?;
+            repository::run_git_command(&repo.local_path, &config.git_args)?;
         }
 
         if operations.configure {
@@ -167,7 +167,7 @@ fn process_repo(config: &Config, repo: &FullRepoSpec) -> Result<()> {
         }
     
         if needs_checkout {
-            repository::check_out(repo.local_path)?;
+            repository::check_out(&repo.local_path)?;
         }
 
         return Ok(()); // Job done

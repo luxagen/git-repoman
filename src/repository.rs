@@ -10,21 +10,21 @@ use crate::invoke;
 
 // Shared repository specification struct
 #[derive(Debug, Clone)]
-pub struct FullRepoSpec<'a> {
-    pub remote_path: &'a str,
-    pub remote_url: &'a str,
-    pub local_path: &'a str,
-    pub cfg_param: &'a str, // TODO REMOVE
+pub struct FullRepoSpec {
+    pub remote_path: String,
+    pub remote_url: String,
+    pub local_path: String,
+    pub cfg_param: String, // TODO REMOVE
 }
 
-impl<'a> FullRepoSpec<'a> {
+impl FullRepoSpec {
     /// Create a new RepoTriple with remote_path, local_path, and media_path; remote_url is initialized to empty
-    pub fn new(remote_path: &'a str, local_path: &'a str, media_path: &'a str, remote_url: &'a str) -> Self {
+    pub fn new(remote_path: &str, local_path: &str, media_path: &str, remote_url: &str) -> Self {
         Self {
-            remote_path,
-            remote_url,
-            local_path,
-            cfg_param: media_path,
+            remote_path: remote_path.to_string(),
+            remote_url: remote_url.to_string(),
+            local_path: local_path.to_string(),
+            cfg_param: media_path.to_string(),
         }
     }
 }
@@ -90,17 +90,17 @@ fn run_git_command_with_warning(local_path: &str, args: &[&str], operation: &str
 
 /// Clone a repository without checking it out
 pub fn clone_repo_no_checkout(repo: &FullRepoSpec) -> Result<()> {
-    println!("Cloning repository \"{}\" into \"{}\"", repo.remote_url, repo.local_path);
+    println!("Cloning repository \"{}\" into \"{}\"", &repo.remote_url, &repo.local_path);
     let status = Command::new("git")
         .arg("clone")
         .arg("--no-checkout")
-        .arg(repo.remote_url)
-        .arg(Path::new(repo.local_path))
+        .arg(&repo.remote_url)
+        .arg(Path::new(&repo.local_path))
         .stdin(std::process::Stdio::inherit())
         .stdout(std::process::Stdio::inherit()) 
         .stderr(std::process::Stdio::inherit())
         .status()
-        .with_context(|| format!("Failed to execute clone: {}", repo.remote_url))?;
+        .with_context(|| format!("Failed to execute clone: {}", &repo.remote_url))?;
     if !status.success() {
         return Err(anyhow!("Git clone failed with exit code: {:?}", status));
     }
@@ -117,10 +117,10 @@ pub fn configure_repo(repo: &FullRepoSpec, config: &Config) -> Result<()> {
 
 /// Update the remote URL for a repository
 pub fn set_remote(repo: &FullRepoSpec) -> Result<()> {
-    let status = invoke::run_command_silent(repo.local_path, &["git", "remote", "set-url", "origin", repo.remote_url])?;
+    let status = invoke::run_command_silent(&repo.local_path, &["git", "remote", "set-url", "origin", &repo.remote_url])?;
     if status == 2 {
         println!("Adding remote origin");
-        run_git_cmd_internal(repo.local_path, &["remote", "add", "-f", "origin", repo.remote_url])?;
+        run_git_cmd_internal(&repo.local_path, &["remote", "add", "-f", "origin", &repo.remote_url])?;
     } else if status != 0 {
         return Err(anyhow!("Failed to set remote with exit code: {}", status));
     }
