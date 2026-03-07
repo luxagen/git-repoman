@@ -7,6 +7,8 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
+use crate::config;
+
 macro_rules! annotated_struct {
     (
         $(#[$attr:meta])*
@@ -26,15 +28,29 @@ macro_rules! annotated_struct {
             pub const ANNOTATIONS: &'static [(&'static str, &'static str)] = &[
                 $( (stringify!($field), $ann) ),*
             ];
+
+            pub fn populate_from_map(mut self, mut map: HashMap<&'static str, String>) -> Self {
+                $(
+                    if let Some(value) = map.remove($ann) {
+                        self.$field = value.parse::<$ty>().unwrap_or_default();
+                    }
+                )*
+                self
+            }
+
+            pub fn set_by_key(&mut self, key: &str, value: String) {
+                match key {
+                    $(
+                        $ann => {
+                            self.$field = value.parse::<$ty>().unwrap_or_default();
+                            return;
+                        }
+                    )*
+                    _ => {}
+                }
+            }
         }
     };
-}
-
-annotated_struct! {
-    struct MyStruct {
-        user_id: i32   => "db:user_id",
-        email:  String => "db:email",
-    }
 }
 
 // "CONFIG_FILENAME" => self.config_filename = value,
@@ -187,7 +203,7 @@ impl Config {
                 }
                 
                 // Set configuration value
-                self.set_from_string(conf_key, value);
+                self.set_by_key(conf_key, value);
             }
         }
     }
@@ -220,7 +236,7 @@ impl Config {
 
 			match line_result
 			{
-				ParsedLine::Config{key, value} => self.set_from_string(key.as_str(), value),
+				ParsedLine::Config{key, value} => self.set_by_key(key.as_str(), value),
 				ParsedLine::RepoSpec {local, remote, param} => {panic!();}, // TODO proper error
 				ParsedLine::Malformed => {panic!();}, // TODO proper error
 				_ => {},
@@ -228,25 +244,5 @@ impl Config {
         }
         
         Ok(())
-    }
-
-    /// Set a configuration value from string key and value
-    pub fn set_from_string(&mut self, key: &str, value: String) {
-        match key {
-            "CONFIG_FILENAME" => self.config_filename = value,
-            "LIST_FN" => self.list_filename = value,
-            "OPT_RECURSE" => self.recurse_enabled = !value.is_empty(),
-            "RLOGIN" => self.rlogin = value,
-            "RPATH_BASE" => self.rpath_base = value,
-            "RPATH_TEMPLATE" => self.rpath_template = value,
-            "LOCAL_DIR" => self.local_dir = value,
-            "GM_DIR" => self.gm_dir = value,
-            "REMOTE_DIR" => self.remote_dir = value,
-            "GIT_ARGS" => self.git_args = value,
-            "CONFIG_CMD" => self.config_cmd = value,
-            "RECURSE_PREFIX" => self.recurse_prefix = value,
-            "TREE_FILTER" => self.tree_filter = value,
-            _ => {} // Ignore unknown keys
-        }
     }
 }
