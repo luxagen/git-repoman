@@ -14,6 +14,57 @@ pub struct RepoSpec
     pub cfg_param: String,
 }
 
+fn validate_env_loaded_config(config: &Config, is_recursive: bool) -> Result<()> {
+	fn validate_scalar(name: &str, value: &str) -> Result<()> {
+		if value.contains('\0') || value.contains('\r') || value.contains('\n') {
+			return Err(anyhow!("{} contains an invalid character", name));
+		}
+		if value.starts_with('"') || value.ends_with('"') {
+			return Err(anyhow!("{} appears to be quoted (possible formatting bug): {}", name, value));
+		}
+		Ok(())
+	}
+
+	validate_scalar("CONFIG_FILENAME", &config.config_filename)?;
+	if config.config_filename.is_empty() {
+		return Err(anyhow!("CONFIG_FILENAME must not be empty"));
+	}
+
+	validate_scalar("LIST_FN", &config.list_filename)?;
+	if config.list_filename.is_empty() {
+		return Err(anyhow!("LIST_FN must not be empty"));
+	}
+	if config.list_filename.contains('/') || config.list_filename.contains('\\') {
+		return Err(anyhow!("LIST_FN must be a filename, not a path: {}", config.list_filename));
+	}
+
+	validate_scalar("CONFIG_CMD", &config.config_cmd)?;
+	validate_scalar("RECURSE_PREFIX", &config.recurse_prefix)?;
+	validate_scalar("TREE_FILTER", &config.tree_filter)?;
+
+	validate_scalar("RLOGIN", &config.rlogin)?;
+	validate_scalar("RPATH_BASE", &config.rpath_base)?;
+	validate_scalar("RPATH_TEMPLATE", &config.rpath_template)?;
+	validate_scalar("LOCAL_DIR", &config.local_dir)?;
+	validate_scalar("GM_DIR", &config.gm_dir)?;
+	validate_scalar("REMOTE_DIR", &config.remote_dir)?;
+	validate_scalar("GIT_ARGS", &config.git_args)?;
+
+	if is_recursive {
+		let cwd = std::env::current_dir().context("Failed to get current directory")?;
+		let list_path = cwd.join(&config.list_filename);
+		if !list_path.exists() {
+			return Err(anyhow!(
+				"Recursive invocation directory {} does not contain listfile {}",
+				cwd.display(),
+				config.list_filename
+			));
+		}
+	}
+
+	Ok(())
+}
+
 pub struct RepoPaths
 {
     pub remote: String,
@@ -84,7 +135,7 @@ impl Config {
     }
 
     /// Load configuration from environment variables starting with GRM_
-    pub fn load_from_env(&mut self) {
+    pub fn load_from_env(&mut self) -> Result<()> {
         // Check if this is a recursive invocation and set the recurse_prefix
         if let Ok(prefix) = std::env::var("GRM_RECURSE_PREFIX") {
             self.recurse_prefix = prefix;
@@ -114,6 +165,9 @@ impl Config {
                 self.set_by_key(conf_key, value);
             }
         }
+
+		validate_env_loaded_config(self, is_recursive)?;
+		Ok(())
     }
 
     // This should:
@@ -228,10 +282,10 @@ fn get_remote_url(config: &Config, remote_rel_path: &str) -> String {
 		panic!("RPATH_BASE must exist!");
 	}
 
-	if config.remote_dir.is_empty()
-	{
-		panic!("REMOTE_DIR must exist!");
-	}
+//	if config.remote_dir.is_empty()
+//	{
+//		panic!("REMOTE_DIR must exist!");
+//	}
 
 	if config.rlogin.is_empty()
 	{
@@ -339,5 +393,17 @@ mod tests {
         assert_eq!(result, "https://github.com/organization/repository.git");
     }
 
-
+	#[test]
+	fn all_values_does_not_quote_strings() {
+		let mut config = Config::new();
+		config.list_filename = ".grm.repos".to_string();
+		let all = config.all_values();
+		let list_fn = all
+			.iter()
+			.find(|(k, _)| k == "LIST_FN")
+			.map(|(_, v)| v.as_str())
+			.expect("LIST_FN must be present in all_values()");
+		assert_eq!(list_fn, ".grm.repos");
+		assert!(!list_fn.starts_with('"') && !list_fn.ends_with('"'));
+	}
 }

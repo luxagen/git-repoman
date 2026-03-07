@@ -282,7 +282,7 @@ fn main() -> Result<()> {
     config.load_from_file(&conf_path)?;
     
     // Load configuration from environment variables
-    config.load_from_env();
+	config.load_from_env()?;
 
     // Require LIST_FN (list_filename) to be set after config processing
     if config.list_filename.is_empty() {
@@ -325,7 +325,8 @@ fn main() -> Result<()> {
 
 /// Find directory containing listfile by walking up from current directory
 fn find_listfile_dir(config: &Config) -> Result<PathBuf> {
-    let mut current_dir = env::current_dir()?;
+	let start_dir = env::current_dir()?;
+	let mut current_dir = start_dir.clone();
     
     loop {
         let list_path = current_dir.join(&config.list_filename);
@@ -334,7 +335,11 @@ fn find_listfile_dir(config: &Config) -> Result<PathBuf> {
         }
         
         if !current_dir.pop() {
-            return Err(anyhow!("Could not find listfile {} in current directory or any ancestor", config.list_filename));
+			return Err(anyhow!(
+				"{} Could not find listfile {} in current directory or any ancestor",
+				start_dir.display(),
+				config.list_filename
+			));
         }
     }
 }

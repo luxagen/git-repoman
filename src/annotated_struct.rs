@@ -30,7 +30,7 @@ macro_rules! annotated_struct {
             pub fn all_values(&self) -> Vec<(String, String)> {
                 let mut result = Vec::new();
                 $(
-                    result.push(($ann.to_string(), format!("{:?}", self.$field)));
+                    result.push(($ann.to_string(), format!("{}", self.$field)));
                 )*
                 result
             }
