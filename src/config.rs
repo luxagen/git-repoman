@@ -167,23 +167,15 @@ impl Config {
 
 		eprintln!("created iterator");
 
-        // TODO sort out this tree
-
         for line_result in iter
         {
             use crate::listfile::ParsedLine;
 
 			match line_result
 			{
-				ParsedLine::Config{key, value} =>
-				{
-					// Now that we own key, we can get a reference to it
-	                let key_ref = key.as_str();
-					
-					self.set_from_string(key_ref, value);
-				},
-				ParsedLine::RepoSpec {local, remote, param} => {panic!();},
-				ParsedLine::Malformed => {panic!();},
+				ParsedLine::Config{key, value} => self.set_from_string(key.as_str(), value),
+				ParsedLine::RepoSpec {local, remote, param} => {panic!();}, // TODO proper error
+				ParsedLine::Malformed => {panic!();}, // TODO proper error
 				_ => {},
 			};
         }
