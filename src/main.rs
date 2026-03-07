@@ -183,9 +183,9 @@ fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
         // Handle parsing errors
         let mut cells = match line_result
 		{
-			ListfileLine::Config{key, value} => {}, // TODO valid
-			ListfileLine::RepoSpec{local, remote, config} => {}, // TODO valid
-			ListfileLine::Malformed => {}, // TODO error
+			ListfileLine::Config{key, value} => config.set_from_string(&key, value.to_string()),
+			ListfileLine::RepoSpec{local, remote, param} => process_repo_line(config, &local, &remote, &param)?,
+			ListfileLine::Malformed => (), // TODO error
 			_ => {},
         };
     }
@@ -203,34 +203,7 @@ fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
 }
 
 /// Process cells from a repository list file
-fn process_repo_line(config: &mut Config, cells: Vec<String>) -> Result<()> {
-    // Skip empty cell arrays (already handled by ConfigLineIterator)
-    if cells.is_empty() {
-        return Ok(());
-    }
-    
-    // Skip comment lines where first non-empty cell starts with #
-    for cell in &cells {
-        if !cell.is_empty() {
-            if cell.starts_with('#') {
-                return Ok(());
-            }
-            break; // Found first non-empty cell that doesn't start with #
-        }
-    }
-    
-    // Handle config lines (first cell is empty, indicating it starts with separator)
-    if cells[0].is_empty() {
-        // This is a config line
-        if cells.len() >= 3 {
-            let key = cells[1].clone();
-            let value = cells[2].clone();
-            // Format: * KEY * VALUE
-            config.set_from_string(&key, value);
-        }
-        return Ok(());
-    }
-
+fn process_repo_line(config: &Config, local: &str, remote: &str, param: &str) -> Result<()> {
 	eprintln!(
 		"#CONFIG RB_{}_ LD_{}_ GD_{}_ RD_{}_",
 		config.rpath_base,
@@ -239,12 +212,12 @@ fn process_repo_line(config: &mut Config, cells: Vec<String>) -> Result<()> {
 		config.remote_dir);
 
     // Extract raw path components from cells
-    let (remote, local, media) = extract_repo_paths(&cells);
-	eprintln!("!P1 R:_{}_ L:_{}_ M:_{}_", remote, local, media);
-    let (remote, local, media) = qualify_repo_paths(&config, &remote, &local, &media);
-	eprintln!("!P2 R:_{}_ L:_{}_ M:_{}_", remote, local, media);
+    let (remote, local, param) = extract_repo_paths([remote, local, param]);
+	eprintln!("!P1 R:_{}_ L:_{}_ P:_{}_", remote, local, param);
+    let (remote, local, media) = qualify_repo_paths(&config, &remote, &local, &param);
+	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", remote, local, media);
     let remote_url = get_remote_url(&config, &remote);
-	eprintln!("!P3 R:_{}_ L:_{}_ M:_{}_ U:_{}_", remote, local, media, remote_url);
+	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ U:_{}_", remote, local, media, remote_url);
 
     let rt = RepoTriple::new(
         &remote,
@@ -313,13 +286,13 @@ pub fn cat_paths(base: &str, rel: &str) -> String {
 }
 
 /// Extract raw repository path components from config file cells
-fn extract_repo_paths(cells: &Vec<String>) -> (String, String, String) {
+fn extract_repo_paths(cells: [&str; 3]) -> (String, String, String) {
     // First cell is always the remote relative path
-    let remote_rel = cells[0].clone();
+    let remote_rel = cells[0];
     
     // Second cell is local relative path, defaults to repo_name if empty or missing
     let local_rel = if cells.len() > 1 && !cells[1].is_empty() {
-        cells[1].clone()
+        cells[1].to_string()
     } else {
         // Extract repo name from remote path for default values
         let re = Regex::new(r"([^/]+?)(?:\.git)?$").unwrap();
@@ -331,12 +304,12 @@ fn extract_repo_paths(cells: &Vec<String>) -> (String, String, String) {
     
     // Third cell is media relative path, defaults to local_rel if empty or missing
     let media_rel = if cells.len() > 2 && !cells[2].is_empty() {
-        cells[2].clone()
+        cells[2].to_string()
     } else {
         local_rel.clone()
     };
     
-    (remote_rel, local_rel, media_rel)
+    (remote_rel.to_string(), local_rel, media_rel)
 }
 
 /// Qualify repository paths based on configuration

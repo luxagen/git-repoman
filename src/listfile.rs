@@ -117,7 +117,7 @@ pub enum ListfileLine
 	Whitespace,
 	Comment  {content: String},
 	Config   {key: String, value: String},
-	RepoSpec {local: String, remote: String, config: String},
+	RepoSpec {local: String, remote: String, param: String},
 	Malformed,
 }
 
@@ -213,7 +213,7 @@ fn parse_config_line(input: &str) -> (ListfileLine, &str) {
 		{
 			local: cells[0].clone(),
 			remote: cells.get(1).cloned().unwrap_or_default(),
-			config: cells.get(2).cloned().unwrap_or_default(),
+			param: cells.get(2).cloned().unwrap_or_default(),
 		},
 		remainder,
 	)
@@ -226,7 +226,7 @@ fn parse_config_line_cells(input: &str) -> Result<(Vec<String>, &str)> {
 		ListfileLine::Whitespace => vec![String::new()],
 		ListfileLine::Comment{content} => vec![format!("#{}", content)],
 		ListfileLine::Config{key, value} => vec![String::new(), key, value],
-		ListfileLine::RepoSpec{local, remote, config} => vec![local, remote, config],
+		ListfileLine::RepoSpec{local, remote, param} => vec![local, remote, param],
 		ListfileLine::Malformed => Vec::new(),
 	};
 	Ok((cells, remainder))

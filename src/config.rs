@@ -182,7 +182,7 @@ impl Config {
 					
 					self.set_from_string(key_ref, value);
 				},
-				ListfileLine::RepoSpec {local, remote, config} => {panic!();},
+				ListfileLine::RepoSpec {local, remote, param} => {panic!();},
 				ListfileLine::Malformed => {panic!();},
 				_ => {},
 			};
