@@ -132,11 +132,11 @@ impl Config {
 
     /// Load configuration from a file
     pub fn load_from_file(&mut self, path: &Path) -> Result<()> {
-		eprintln!("config.load_from_file: {}", path.display());
+//		eprintln!("config.load_from_file: {}", path.display());
 
         let iter = crate::listfile::LineIterator::from_file(path)?;
 
-		eprintln!("created iterator");
+//		eprintln!("created iterator");
 
         for line_result in iter
         {

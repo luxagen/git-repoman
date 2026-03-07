@@ -205,20 +205,20 @@ fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
 
 /// Process cells from a repository list file
 fn process_repo_line(config: &Config, local: &str, remote: &str, cfg_param: &str) -> Result<()> {
-	eprintln!(
-		"#CONFIG RB_{}_ LD_{}_ GD_{}_ RD_{}_",
-		config.rpath_base,
-		config.local_dir,
-		config.gm_dir,
-		config.remote_dir);
+//	eprintln!(
+//		"#CONFIG RB_{}_ LD_{}_ GD_{}_ RD_{}_",
+//		config.rpath_base,
+//		config.local_dir,
+//		config.gm_dir,
+//		config.remote_dir);
 
     // Extract raw path components from cells
 	let spec = RepoSpec::from_cells([remote, local, cfg_param]);
-	eprintln!("!P1 R:_{}_ L:_{}_ P:_{}_", spec.remote_rel, spec.local_rel, spec.cfg_param);
+//	eprintln!("!P1 R:_{}_ L:_{}_ P:_{}_", spec.remote_rel, spec.local_rel, spec.cfg_param);
     let paths = RepoPaths::from_spec(spec, &config);
-	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", paths.remote, paths.local, paths.config);
+//	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", paths.remote, paths.local, paths.config);
     let full = FullRepoSpec::from_paths(paths,&config);
-	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ RU:_{}_", full.remote_path, full.local_path, full.cfg_param, full.remote_url);
+//	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ RU:_{}_", full.remote_path, full.local_path, full.cfg_param, full.remote_url);
 
     // Filter out repositories that are not in or below the current directory
     if !passes_tree_filter(&config.tree_filter, &full.local_path) {
