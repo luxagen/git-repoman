@@ -8,6 +8,7 @@ use std::f32::consts::E;
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
+use std::borrow::Cow;
 use anyhow::{Context, Result, anyhow};
 use clap::Parser;
 use std::collections::HashMap;
@@ -416,8 +417,11 @@ fn main() -> Result<()> {
     
     // Store git command arguments if in git mode
     if args.mode.to_string() == "git" && !args.args.is_empty() {
-        let git_args = args.args.join(" ");
-        config.git_args = git_args;
+		let git_args = args.args.iter()
+			.map(|arg| shell_escape::unix::escape(Cow::Borrowed(arg.as_str())).to_string())
+			.collect::<Vec<String>>()
+			.join(" ");
+		config.git_args = git_args;
     }
     
     // Get listfile directory and path
