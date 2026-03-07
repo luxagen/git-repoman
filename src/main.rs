@@ -15,9 +15,10 @@ use std::collections::HashMap;
 use url::Url;
 use colored::Colorize;
 
+#[macro_use]
+mod annotated_struct;
 mod config;
 mod invoke;
-mod recursive;
 mod repository;
 mod mode;
 mod remote_url;
@@ -198,7 +199,7 @@ fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
     let operations = get_operations();
     if operations.recurse {
         let parent_dir = list_path.parent().unwrap_or(Path::new("."));
-        if let Err(err) = recursive::recurse_listfiles(parent_dir, config, mode::get_mode_string()) {
+		if let Err(err) = recurse_listfiles(parent_dir, config, mode::get_mode_string()) {
             eprintln!("Error during recursion: {}", err);
         }
     }
@@ -220,10 +221,8 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, cfg_param: &str
 	eprintln!("!P1 R:_{}_ L:_{}_ P:_{}_", spec.remote_rel, spec.local_rel, spec.cfg_param);
     let paths = RepoPaths::from_spec(spec, &config);
 	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", paths.remote, paths.local, paths.config);
-
     let full = FullRepoSpec::from_paths(paths,&config);
-    
-	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ U:_{}_", full.remote_path, full.local_path, full.cfg_param, full.remote_url);
+	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ RU:_{}_", full.remote_path, full.local_path, full.cfg_param, full.remote_url);
 
     // Filter out repositories that are not in or below the current directory
     if !passes_tree_filter(&config.tree_filter, &full.local_path) {
@@ -264,21 +263,6 @@ fn passes_tree_filter(tree_filter: &str, local_path: &str) -> bool {
     }
     
     passes
-}
-
-/// Concatenate paths
-pub fn cat_paths(base: &str, rel: &str) -> String {
-    // Absolute paths remain unchanged
-    if rel.starts_with('/') || base.is_empty() {
-        return rel.to_string();
-    }
-
-    // Relative paths get base prefix if applicable
-    if !rel.is_empty() {
-        format!("{}/{}", base, rel)
-    } else {
-        base.to_string()
-    }
 }
 
 fn main() -> Result<()> {
@@ -357,4 +341,105 @@ fn find_listfile_dir(config: &Config) -> Result<PathBuf> {
             return Err(anyhow!("Could not find listfile {} in current directory or any ancestor", config.list_filename));
         }
     }
+}
+
+/// Recursively process subdirectories, spawning new instances of the program
+/// for directories containing listfiles
+pub fn recurse_listfiles(dir: &Path, config: &Config, mode: &str) -> Result<()> {
+    // Check if recursion is enabled
+    let operations = get_operations();
+    if !operations.recurse {
+        return Ok(());
+    }
+    
+    // Clean up the path before processing
+    let dir_str = dir.to_string_lossy().to_string();
+    let dir_str = dir_str.trim_end_matches('/');
+    let dir_path = Path::new(dir_str);
+    
+    // Read directory entries
+    let entries = fs::read_dir(dir_path)
+        .with_context(|| format!("Failed to read directory: {}", dir_path.display()))?;
+    
+    for entry in entries {
+        let entry = entry?;
+        let path = entry.path();
+        
+        // Skip non-directories and hidden directories
+        if !path.is_dir() || path.file_name()
+            .and_then(|n| n.to_str())
+            .map(|s| s.starts_with('.'))
+            .unwrap_or(false) {
+            continue;
+        }
+        
+        let list_file_path = path.join(&config.list_filename);
+        
+        if list_file_path.exists() {
+            // Recurse by spawning a new process
+            recurse_to_subdirectory(&path, config, mode)?;
+            
+            // Skip further recursion - the spawned process will handle subdirectories
+            continue;
+        }
+        
+        // Continue recursing into this directory
+        recurse_listfiles(&path, config, mode)?;
+    }
+    
+    Ok(())
+}
+
+/// Spawn a new process to handle a subdirectory with a listfile
+fn recurse_to_subdirectory(path: &Path, config: &Config, mode: &str) -> Result<()> {
+    // Get relative path for constructing the recurse prefix
+    let current_dir = env::current_dir()?;
+    let path_rel = if let Ok(rel_path) = path.strip_prefix(&current_dir) {
+        rel_path.to_string_lossy().to_string()
+    } else {
+        path.file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("")
+            .to_string()
+    };
+    
+    // Generate recurse prefix based on current hierarchy
+    let recurse_prefix = if config.recurse_prefix.is_empty() {
+        format!("{}/", path_rel)
+    } else {
+        format!("{}{}/", config.recurse_prefix, path_rel)
+    };
+    
+    // Get path to current executable
+    let exe_path = env::current_exe()
+        .context("Failed to get path to current executable")?;
+    
+    // Build command to execute in subdirectory with preserved environment
+    let mut cmd = std::process::Command::new(exe_path);
+    cmd.arg(mode)
+       .current_dir(path)
+       // Set the recurse prefix for this level
+       .env("GRM_RECURSE_PREFIX", recurse_prefix);
+    
+    // Add all config values with GRM_ prefix
+    for (key, value) in config.all_values() {
+        if key == "RECURSE_PREFIX" {
+            // Don't pass recurse prefix (already handled)
+            continue;
+        }
+        
+        // Add GRM_ prefix to all other config variables
+        cmd.env(format!("GRM_{}", key), value);
+    }
+    
+    // Execute the command with preserved environment
+    let status = cmd.status()
+        .with_context(|| format!("Failed to spawn recursive process in: {}", path.display()))?;
+    
+    if !status.success() {
+        let code = status.code().unwrap_or(-1);
+        eprintln!("Warning: Recursive instance in {} exited with code: {}", path.display(), code);
+    }
+    
+    Ok(())
 }

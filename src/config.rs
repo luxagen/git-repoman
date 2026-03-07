@@ -7,59 +7,28 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
-use crate::{cat_paths, remote_url::build_remote_url};
+use crate::{remote_url::build_remote_url};
 
-macro_rules! annotated_struct {
-    (
-        $(#[$attr:meta])*
-        $vis:vis struct $name:ident {
-            $(
-                $(#[$field_attr:meta])*
-                $field:ident : $ty:ty => $ann:expr
-            ),* $(,)?
-        }
-    ) => {
-        $(#[$attr])*
-        $vis struct $name {
-            $( $(#[$field_attr])* pub $field: $ty ),*
-        }
+pub struct RepoSpec
+{
+    pub remote_rel: String,
+    pub local_rel: String,
+    pub cfg_param: String,
+}
 
-        impl $name {
-//            pub const ANNOTATIONS: &'static [(&'static str, &'static str)] = &[
-//                $( (stringify!($field), $ann) ),*
-//            ];
-//
-//            pub fn populate_from_map(mut self, mut map: HashMap<&'static str, String>) -> Self {
-//                $(
-//                    if let Some(value) = map.remove($ann) {
-//                        self.$field = value.parse::<$ty>().unwrap_or_default();
-//                    }
-//                )*
-//                self
-//            }
+pub struct RepoPaths
+{
+    pub remote: String,
+    pub local: String,
+    pub config: String,
+}
 
-            pub fn set_by_key(&mut self, key: &str, value: String) {
-                match key {
-                    $(
-                        $ann => {
-                            self.$field = value.parse::<$ty>().unwrap_or_default();
-                            return;
-                        }
-                    )*
-                    _ => {}
-                }
-            }
-
-            // AUTO-GENERATED: no manual repetition!
-            pub fn all_values(&self) -> Vec<(String, String)> {
-                let mut result = Vec::new();
-                $(
-                    result.push(($ann.to_string(), format!("{:?}", self.$field)));
-                )*
-                result
-            }
-        }
-    };
+#[derive(Debug)]
+pub struct FullRepoSpec {
+    pub remote_path: String,
+    pub remote_url: String,
+    pub local_path: String,
+    pub cfg_param: String, // TODO REMOVE
 }
 
 // Typed configuration values with proper types for each setting
@@ -188,28 +157,6 @@ impl Config {
     }
 }
 
-pub struct RepoSpec
-{
-    pub remote_rel: String,
-    pub local_rel: String,
-    pub cfg_param: String,
-}
-
-pub struct RepoPaths
-{
-    pub remote: String,
-    pub local: String,
-    pub config: String,
-}
-
-#[derive(Debug)]
-pub struct FullRepoSpec {
-    pub remote_path: String,
-    pub remote_url: String,
-    pub local_path: String,
-    pub cfg_param: String, // TODO REMOVE
-}
-
 impl RepoSpec
 {
 	/// Extract raw repository path components from config file cells
@@ -262,6 +209,20 @@ impl RepoPaths
 	}
 }
 
+impl FullRepoSpec {
+    pub fn from_paths(paths: RepoPaths, config: &Config) -> Self {
+        let remote_url = get_remote_url(config, &paths.remote);
+
+        Self
+        {
+            remote_path: paths.remote,
+            remote_url,
+            local_path: paths.local,
+            cfg_param: paths.config,
+        }
+    }
+}
+
 /// Get formatted remote URL based on configuration and remote relative path
 fn get_remote_url(config: &Config, remote_rel_path: &str) -> String {
 	if config.rpath_base.is_empty()
@@ -295,16 +256,16 @@ fn get_remote_url(config: &Config, remote_rel_path: &str) -> String {
     }
 }
 
-impl FullRepoSpec {
-    pub fn from_paths(paths: RepoPaths, config: &Config) -> Self {
-        let remote_url = get_remote_url(config, &paths.remote);
+fn cat_paths(base: &str, rel: &str) -> String {
+    // Absolute paths remain unchanged
+    if rel.starts_with('/') || base.is_empty() {
+        return rel.to_string();
+    }
 
-        Self
-        {
-            remote_path: paths.remote,
-            remote_url,
-            local_path: paths.local,
-            cfg_param: paths.config,
-        }
+    // Relative paths get base prefix if applicable
+    if !rel.is_empty() {
+        format!("{}/{}", base, rel)
+    } else {
+        base.to_string()
     }
 }
