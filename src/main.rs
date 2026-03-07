@@ -15,7 +15,7 @@ use regex::Regex;
 use url::Url;
 use colored::Colorize;
 
-mod process;
+mod invoke;
 mod recursive;
 mod repository;
 mod mode;

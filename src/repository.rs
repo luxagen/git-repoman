@@ -6,7 +6,7 @@ use std::path::Path;
 use std::process::Command;
 use anyhow::{Context, Result, anyhow};
 use crate::Config;
-use crate::process;
+use crate::invoke;
 
 // Shared repository specification struct
 #[derive(Debug, Clone)]
@@ -53,7 +53,7 @@ pub fn is_dir_repo_root(local_path: &str) -> Result<bool> {
 /// Initialize a git repository
 pub fn init_new(local_path: &str) -> Result<()> {
     // Initialize git repository
-    let status = process::run_in_dir(local_path, &["git", "init", "-q"])?;
+    let status = invoke::run_in_dir(local_path, &["git", "init", "-q"])?;
     if status != 0 {
         return Err(anyhow!("Git init failed with exit code: {}", status));
     }
@@ -65,7 +65,7 @@ fn run_git_cmd_internal(local_path: &str, args: &[&str]) -> Result<()> {
     let mut cmd_args = vec!["git"];
     cmd_args.extend(args);
     
-    let status = process::run_in_dir(local_path, &cmd_args)?;
+    let status = invoke::run_in_dir(local_path, &cmd_args)?;
     
     if status != 0 {
         return Err(anyhow!("Git command '{}' failed with exit code: {}", 
@@ -80,7 +80,7 @@ fn run_git_command_with_warning(local_path: &str, args: &[&str], operation: &str
     let mut cmd_args = vec!["git"];
     cmd_args.extend(args);
     
-    let status = process::run_in_dir(local_path, &cmd_args)?;
+    let status = invoke::run_in_dir(local_path, &cmd_args)?;
     if status != 0 {
         println!("Warning: git {} failed with code {}", operation, status);
     }
@@ -117,7 +117,7 @@ pub fn configure_repo(repo: &RepoTriple, config: &Config) -> Result<()> {
 
 /// Update the remote URL for a repository
 pub fn set_remote(repo: &RepoTriple) -> Result<()> {
-    let status = process::run_command_silent(repo.local_path, &["git", "remote", "set-url", "origin", repo.remote_url])?;
+    let status = invoke::run_command_silent(repo.local_path, &["git", "remote", "set-url", "origin", repo.remote_url])?;
     if status == 2 {
         println!("Adding remote origin");
         run_git_cmd_internal(repo.local_path, &["remote", "add", "-f", "origin", repo.remote_url])?;
