@@ -42,37 +42,6 @@ pub fn init_new(local_path: &str) -> Result<()> {
     Ok(())
 }
 
-fn run_git_cmd(local_path: &str, args: &[&str], operation_for_warning: Option<&str>) -> Result<()> {
-	let mut cmd_args = vec!["git"];
-	cmd_args.extend(args);
-
-	let status = invoke::run_in_dir(local_path, &cmd_args)?;
-	if status != 0 {
-		if let Some(operation) = operation_for_warning {
-			println!("Warning: git {} failed with code {}", operation, status);
-			return Ok(());
-		}
-
-		return Err(anyhow!(
-			"Git command '{}' failed with exit code: {}",
-			args.join(" "),
-			status
-		));
-	}
-
-	Ok(())
-}
-
-/// Run a git command and expect success (internal version)
-fn run_git_cmd_internal(local_path: &str, args: &[&str]) -> Result<()> {
-	run_git_cmd(local_path, args, None)
-}
-
-/// Run a git command and print a warning on failure instead of returning an error
-fn run_git_command_with_warning(local_path: &str, args: &[&str], operation: &str) -> Result<()> {
-	run_git_cmd(local_path, args, Some(operation))
-}
-
 /// Clone a repository without checking it out
 pub fn clone_repo_no_checkout(repo: &FullRepoSpec) -> Result<()> {
     println!("Cloning repository \"{}\" into \"{}\"", &repo.remote_url, &repo.local_path);
@@ -105,7 +74,7 @@ pub fn set_remote(repo: &FullRepoSpec) -> Result<()> {
     let status = invoke::run_command_silent(&repo.local_path, &["git", "remote", "set-url", "origin", &repo.remote_url])?;
     if status == 2 {
         println!("Adding remote origin");
-        run_git_cmd_internal(&repo.local_path, &["remote", "add", "-f", "origin", &repo.remote_url])?;
+		run_git_cmd(&repo.local_path, &["remote", "add", "-f", "origin", &repo.remote_url], None)?;
     } else if status != 0 {
         return Err(anyhow!("Failed to set remote with exit code: {}", status));
     }
@@ -119,7 +88,7 @@ pub fn check_out(local_path: &str) -> Result<()> {
     println!("Checking out repository at \"{}\"", local_path);
     
     // Reset to get the working directory in sync with remote
-    run_git_command_with_warning(local_path, &["checkout"], "checkout")?;
+		run_git_cmd(local_path, &["checkout"], Some("checkout"))?;
     
     Ok(())
 }
@@ -270,7 +239,7 @@ pub fn run_git_command(local_path: &str, args_str: &str) -> Result<()> {
 	};
 
 	let args: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
-	run_git_cmd_internal(local_path, &args)
+	run_git_cmd(local_path, &args, None)
 }
 
 /// Execute the CONFIG_CMD in the specified directory
@@ -299,4 +268,25 @@ pub fn execute_config_cmd(repo: &FullRepoSpec, config: &Config) -> Result<()> {
     }
     
     Ok(())
+}
+
+fn run_git_cmd(local_path: &str, args: &[&str], operation_for_warning: Option<&str>) -> Result<()> {
+	let mut cmd_args = vec!["git"];
+	cmd_args.extend(args);
+
+	let status = invoke::run_in_dir(local_path, &cmd_args)?;
+	if status != 0 {
+		if let Some(operation) = operation_for_warning {
+			println!("Warning: git {} failed with code {}", operation, status);
+			return Ok(());
+		}
+
+		return Err(anyhow!(
+			"Git command '{}' failed with exit code: {}",
+			args.join(" "),
+			status
+		));
+	}
+
+	Ok(())
 }
