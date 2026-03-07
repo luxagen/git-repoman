@@ -84,6 +84,9 @@ fn determine_repo_state(path: &str) -> Result<RepoState> {
     }
 }    
 
+// Use the shared RepoTriple from repository.rs
+use crate::repository::FullRepoSpec;
+
 /// Process a single repository
 #[allow(unused_assignments)] // Stupid compiler
 fn process_repo(config: &Config, repo: &FullRepoSpec) -> Result<()> {
@@ -202,7 +205,7 @@ fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
 }
 
 /// Process cells from a repository list file
-fn process_repo_line(config: &Config, local: &str, remote: &str, param: &str) -> Result<()> {
+fn process_repo_line(config: &Config, local: &str, remote: &str, cfg_param: &str) -> Result<()> {
 	eprintln!(
 		"#CONFIG RB_{}_ LD_{}_ GD_{}_ RD_{}_",
 		config.rpath_base,
@@ -211,20 +214,21 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, param: &str) ->
 		config.remote_dir);
 
     // Extract raw path components from cells
-    let (remote, local, param) = extract_repo_paths([remote, local, param]);
-	eprintln!("!P1 R:_{}_ L:_{}_ P:_{}_", remote, local, param);
-    let (remote, local, media) = qualify_repo_paths(&config, &remote, &local, &param);
-	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", remote, local, media);
-    let remote_url = get_remote_url(&config, &remote);
-	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ U:_{}_", remote, local, media, remote_url);
+    let (remote, local, cfg_param) = extract_repo_paths([remote, local, cfg_param]);
+	eprintln!("!P1 R:_{}_ L:_{}_ P:_{}_", remote, local, cfg_param);
+    let (remote, local, cfg_param) = qualify_repo_paths(&config, &remote, &local, &cfg_param);
+	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", remote, local, cfg_param);
 
+    let remote_url = get_remote_url(&config, &remote);
     let rt = FullRepoSpec::new(
         &remote,
         &local,
-        &media,
+        &cfg_param,
         &remote_url,
     );
     
+	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ U:_{}_", remote, local, cfg_param, rt.remote_url);
+
     // Filter out repositories that are not in or below the current directory
     if !passes_tree_filter(&config.tree_filter, &rt.local_path) {
         return Ok(());
@@ -241,9 +245,6 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, param: &str) ->
     
     Ok(())
 }
-
-// Use the shared RepoTriple from repository.rs
-use crate::repository::FullRepoSpec;
 
 /// Check if a repository local path passes the tree filter
 /// Returns true if there is no filter or if the path is within the filter
@@ -284,8 +285,15 @@ pub fn cat_paths(base: &str, rel: &str) -> String {
     }
 }
 
+struct RepoSpec
+{
+    remote_rel: String,
+    local_rel: String,
+    cfg_param: String,
+}
+
 /// Extract raw repository path components from config file cells
-fn extract_repo_paths(cells: [&str; 3]) -> (String, String, String) {
+fn extract_repo_paths(cells: [&str; 3]) -> RepoSpec {
     // First cell is always the remote relative path
     let remote_rel = cells[0];
     
@@ -308,7 +316,11 @@ fn extract_repo_paths(cells: [&str; 3]) -> (String, String, String) {
         local_rel.clone()
     };
     
-    (remote_rel.to_string(), local_rel, media_rel)
+    RepoSpec {
+        remote_rel: remote_rel.to_string(),
+        local_rel,
+        cfg_param: media_rel,
+    }
 }
 
 /// Qualify repository paths based on configuration

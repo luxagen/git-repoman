@@ -14,7 +14,7 @@ pub struct FullRepoSpec<'a> {
     pub remote_path: &'a str,
     pub remote_url: &'a str,
     pub local_path: &'a str,
-    pub media_path: &'a str, // TODO REMOVE
+    pub cfg_param: &'a str, // TODO REMOVE
 }
 
 impl<'a> FullRepoSpec<'a> {
@@ -24,7 +24,7 @@ impl<'a> FullRepoSpec<'a> {
             remote_path,
             remote_url,
             local_path,
-            media_path,
+            cfg_param: media_path,
         }
     }
 }
@@ -294,7 +294,7 @@ pub fn execute_config_cmd(repo: &FullRepoSpec, config: &Config) -> Result<()> {
     }
 
     // Use shell-escape crate to robustly escape the media_path argument for shell usage
-    let inner_cmd = format!("{config_cmd} {}", shell_escape::unix::escape(repo.media_path.into()));
+    let inner_cmd = format!("{config_cmd} {}", shell_escape::unix::escape(repo.cfg_param.into()));
 
 	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
 	// process is MinGW or Cygwin; we must rely on `sh` being on the path

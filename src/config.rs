@@ -7,8 +7,6 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
-use crate::config;
-
 macro_rules! annotated_struct {
     (
         $(#[$attr:meta])*
