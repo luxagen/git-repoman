@@ -1,6 +1,7 @@
 ﻿// GRM - Git Repository Manager
 // Copyright © luxagen, 2025-present
 
+use std::io::Write;
 use std::process::{Command, Stdio};
 use anyhow::{Context, Result, anyhow};
 
@@ -36,6 +37,41 @@ pub fn run_in_dir(dir: &str, args: &[&str]) -> Result<i32> {
     }
     
     Ok(exit_code)
+}
+
+pub fn run_in_dir_status(dir: &str, program: &str, args: &[&str]) -> Result<i32> {
+	let status = Command::new(program)
+		.args(args)
+		.current_dir(dir)
+		.stdin(Stdio::inherit())
+		.stdout(Stdio::inherit())
+		.stderr(Stdio::inherit())
+		.status()
+		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, args))?;
+
+	Ok(status.code().unwrap_or(-1))
+}
+
+pub fn run_git_status(dir: &str, args: &[&str]) -> Result<i32> {
+	run_in_dir_status(dir, "git", args)
+}
+
+pub fn run_with_stdin_inherited(dir: &str, program: &str, args: &[&str], stdin_bytes: &[u8]) -> Result<i32> {
+	let mut child = Command::new(program)
+		.args(args)
+		.current_dir(dir)
+		.stdin(Stdio::piped())
+		.stdout(Stdio::inherit())
+		.stderr(Stdio::inherit())
+		.spawn()
+		.with_context(|| format!("Failed to spawn command in {}: {:?}", dir, args))?;
+
+	if let Some(mut stdin) = child.stdin.take() {
+		stdin.write_all(stdin_bytes)?;
+	}
+
+	let status = child.wait()?;
+	Ok(status.code().unwrap_or(-1))
 }
 
 pub fn run_in_dir_capture(dir: &str, args: &[&str]) -> Result<CapturedOutput> {

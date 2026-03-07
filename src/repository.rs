@@ -4,7 +4,6 @@
 use std::borrow::Cow;
 use std::io::Write;
 use std::path::Path;
-use std::process::Command;
 use anyhow::{Context, Result, anyhow};
 use crate::config::{Config,RepoSpec};
 use crate::invoke;
@@ -42,19 +41,11 @@ pub fn init_new(local_path: &str) -> Result<()> {
 /// Clone a repository without checking it out
 pub fn clone_repo_no_checkout(repo: &FullRepoSpec) -> Result<()> {
     println!("Cloning repository \"{}\" into \"{}\"", &repo.remote_url, &repo.local_path);
-    let status = Command::new("git")
-        .arg("clone")
-        .arg("--no-checkout")
-        .arg(&repo.remote_url)
-        .arg(Path::new(&repo.local_path))
-        .stdin(std::process::Stdio::inherit())
-        .stdout(std::process::Stdio::inherit()) 
-        .stderr(std::process::Stdio::inherit())
-        .status()
-        .with_context(|| format!("Failed to execute clone: {}", &repo.remote_url))?;
-    if !status.success() {
-        return Err(anyhow!("Git clone failed with exit code: {:?}", status));
-    }
+	let status = invoke::run_git_status(".", &["clone", "--no-checkout", &repo.remote_url, &repo.local_path])
+		.with_context(|| format!("Failed to execute clone: {}", &repo.remote_url))?;
+	if status != 0 {
+		return Err(anyhow!("Git clone failed with exit code: {}", status));
+	}
     Ok(())
 }
 
@@ -192,38 +183,26 @@ else
 fi
 "##);
 
-    let mut child = Command::new("ssh")
-        .args([ssh_host, "bash -s"])
-        .stdin(std::process::Stdio::piped())
-        .spawn()
+    let status = invoke::run_with_stdin_inherited(".", "ssh", &[ssh_host, "bash -s"], script.as_bytes())
         .with_context(|| "Failed to spawn SSH command for repository creation")?;
 
-    if let Some(mut stdin) = child.stdin.take() {
-        use std::io::Write;
-        stdin.write_all(script.as_bytes())?;
-    }
-
-    let status = child.wait()?;
-    
-    // Handle exit codes
-    match status.code() {
-        Some(0) => {
-            // Success
-            println!("Repository created successfully");
-        },
-        Some(EXIT_NOT_REPO) => {
-            return Err(anyhow!("Target directory exists but is not a git repository: {}", target_path));
-        },
-        Some(EXIT_IS_FILE) => {
-            return Err(anyhow!("Target path exists as a regular file: {}", target_path));
-        },
-        Some(EXIT_OTHER_FILETYPE) => {
-            return Err(anyhow!("Target path exists as a special file (device, pipe, socket, or symlink): {}", target_path));
-        },
-        _ => {
-            return Err(anyhow!("Remote repository creation failed with status: {:?}", status));
-        }
-    }
+	match status {
+		0 => {
+			println!("Repository created successfully");
+		},
+		EXIT_NOT_REPO => {
+			return Err(anyhow!("Target directory exists but is not a git repository: {}", target_path));
+		},
+		EXIT_IS_FILE => {
+			return Err(anyhow!("Target path exists as a regular file: {}", target_path));
+		},
+		EXIT_OTHER_FILETYPE => {
+			return Err(anyhow!("Target path exists as a special file (device, pipe, socket, or symlink): {}", target_path));
+		},
+		_ => {
+			return Err(anyhow!("Remote repository creation failed with status: {}", status));
+		}
+	}
 
     Ok(!is_repo)
 }
@@ -251,18 +230,11 @@ pub fn execute_config_cmd(repo: &FullRepoSpec, config: &Config) -> Result<()> {
 
 	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
 	// process is MinGW or Cygwin; we must rely on `sh` being on the path
-    let status = Command::new("sh".to_string())
-        .args(vec!["-c".to_string(), inner_cmd.clone()])
-        .current_dir(&repo.local_path)
-        .stdin(std::process::Stdio::inherit())
-        .stdout(std::process::Stdio::inherit())
-        .stderr(std::process::Stdio::inherit())
-        .status()
-        .with_context(|| format!("Failed to execute CONFIG_CMD: {}", inner_cmd))?;
-    
-    if !status.success() {
-        return Err(anyhow!("Config command failed with exit code: {:?}", status));
-    }
-    
+	let status = invoke::run_in_dir_status(&repo.local_path, "sh", &["-c", inner_cmd.as_str()])
+		.with_context(|| format!("Failed to execute CONFIG_CMD: {}", inner_cmd))?;
+	if status != 0 {
+		return Err(anyhow!("Config command failed with exit code: {}", status));
+	}
+	
     Ok(())
 }
