@@ -58,3 +58,24 @@ pub fn run_command_silent(dir: &str, args: &[&str]) -> Result<i32> {
     
     Ok(exit_code)
 }
+
+pub fn run_git_cmd(local_path: &str, args: &[&str], operation_for_warning: Option<&str>) -> Result<()> {
+	let mut cmd_args = vec!["git"];
+	cmd_args.extend(args);
+
+	let status = run_in_dir(local_path, &cmd_args)?;
+	if status != 0 {
+		if let Some(operation) = operation_for_warning {
+			println!("Warning: git {} failed with code {}", operation, status);
+			return Ok(());
+		}
+
+		return Err(anyhow!(
+			"Git command '{}' failed with exit code: {}",
+			args.join(" "),
+			status
+		));
+	}
+
+	Ok(())
+}

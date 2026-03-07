@@ -4,7 +4,6 @@
 use std::borrow::Cow;
 use std::io::Write;
 use std::path::Path;
-use std::process::Command;
 use anyhow::{Context, Result, anyhow};
 use crate::config::{Config,RepoSpec};
 use crate::invoke;
@@ -74,7 +73,7 @@ pub fn set_remote(repo: &FullRepoSpec) -> Result<()> {
     let status = invoke::run_command_silent(&repo.local_path, &["git", "remote", "set-url", "origin", &repo.remote_url])?;
     if status == 2 {
         println!("Adding remote origin");
-		run_git_cmd(&repo.local_path, &["remote", "add", "-f", "origin", &repo.remote_url], None)?;
+		crate::invoke::run_git_cmd(&repo.local_path, &["remote", "add", "-f", "origin", &repo.remote_url], None)?;
     } else if status != 0 {
         return Err(anyhow!("Failed to set remote with exit code: {}", status));
     }
@@ -88,7 +87,7 @@ pub fn check_out(local_path: &str) -> Result<()> {
     println!("Checking out repository at \"{}\"", local_path);
     
     // Reset to get the working directory in sync with remote
-		run_git_cmd(local_path, &["checkout"], Some("checkout"))?;
+	crate::invoke::run_git_cmd(local_path, &["checkout"], Some("checkout"))?;
     
     Ok(())
 }
@@ -239,7 +238,7 @@ pub fn run_git_command(local_path: &str, args_str: &str) -> Result<()> {
 	};
 
 	let args: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
-	run_git_cmd(local_path, &args, None)
+	crate::invoke::run_git_cmd(local_path, &args, None)
 }
 
 /// Execute the CONFIG_CMD in the specified directory
@@ -268,25 +267,4 @@ pub fn execute_config_cmd(repo: &FullRepoSpec, config: &Config) -> Result<()> {
     }
     
     Ok(())
-}
-
-fn run_git_cmd(local_path: &str, args: &[&str], operation_for_warning: Option<&str>) -> Result<()> {
-	let mut cmd_args = vec!["git"];
-	cmd_args.extend(args);
-
-	let status = invoke::run_in_dir(local_path, &cmd_args)?;
-	if status != 0 {
-		if let Some(operation) = operation_for_warning {
-			println!("Warning: git {} failed with code {}", operation, status);
-			return Ok(());
-		}
-
-		return Err(anyhow!(
-			"Git command '{}' failed with exit code: {}",
-			args.join(" "),
-			status
-		));
-	}
-
-	Ok(())
 }
