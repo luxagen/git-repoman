@@ -4,6 +4,12 @@
 use std::process::{Command, Stdio};
 use anyhow::{Context, Result, anyhow};
 
+pub struct CapturedOutput {
+	pub exit_code: i32,
+	pub stdout: Vec<u8>,
+	pub stderr: Vec<u8>,
+}
+
 /// Run a command in a specific directory
 pub fn run_in_dir(dir: &str, args: &[&str]) -> Result<i32> {
     if args.is_empty() {
@@ -30,6 +36,37 @@ pub fn run_in_dir(dir: &str, args: &[&str]) -> Result<i32> {
     }
     
     Ok(exit_code)
+}
+
+pub fn run_in_dir_capture(dir: &str, args: &[&str]) -> Result<CapturedOutput> {
+	if args.is_empty() {
+		return Err(anyhow!("No command specified"));
+	}
+
+	let program = args[0];
+	let arguments = &args[1..];
+
+	let output = Command::new(program)
+		.args(arguments)
+		.current_dir(dir)
+		.stdin(Stdio::null())
+		.stdout(Stdio::piped())
+		.stderr(Stdio::piped())
+		.output()
+		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, args))?;
+
+	let exit_code = output.status.code().unwrap_or(-1);
+	Ok(CapturedOutput {
+		exit_code,
+		stdout: output.stdout,
+		stderr: output.stderr,
+	})
+}
+
+pub fn run_git_capture(local_path: &str, args: &[&str]) -> Result<CapturedOutput> {
+	let mut cmd_args = vec!["git"];
+	cmd_args.extend(args);
+	run_in_dir_capture(local_path, &cmd_args)
 }
 
 /// Run a command in a specific directory, capturing output but not displaying it
