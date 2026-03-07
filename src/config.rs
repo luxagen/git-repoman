@@ -49,23 +49,18 @@ macro_rules! annotated_struct {
                     _ => {}
                 }
             }
+
+            // AUTO-GENERATED: no manual repetition!
+            pub fn all_values(&self) -> Vec<(String, String)> {
+                let mut result = Vec::new();
+                $(
+                    result.push(($ann.to_string(), format!("{:?}", self.$field)));
+                )*
+                result
+            }
         }
     };
 }
-
-// "CONFIG_FILENAME" => self.config_filename = value,
-// "LIST_FN" => self.list_filename = value,
-// "OPT_RECURSE" => self.recurse_enabled = !value.is_empty(),
-// "RLOGIN" => self.rlogin = value,
-// "RPATH_BASE" => self.rpath_base = value,
-// "RPATH_TEMPLATE" => self.rpath_template = value,
-// "LOCAL_DIR" => self.local_dir = value,
-// "GM_DIR" => self.gm_dir = value,
-// "REMOTE_DIR" => self.remote_dir = value,
-// "GIT_ARGS" => self.git_args = value,
-// "CONFIG_CMD" => self.config_cmd = value,
-// "RECURSE_PREFIX" => self.recurse_prefix = value,
-// "TREE_FILTER" => self.tree_filter = value,
 
 // Typed configuration values with proper types for each setting
 annotated_struct!
@@ -121,60 +116,6 @@ impl Config {
         }
     }
 
-    // TODO Why to_string()? Tie lifetimes together to use &str everywhere?
-
-    /// Get all configuration values as string key-value pairs (for environment variable passing)
-    pub fn all_values(&self) -> Vec<(String, String)> {
-        let mut result = Vec::new();
-        
-        // Add all values with their string representations
-        result.push(("CONFIG_FILENAME".to_string(), self.config_filename.clone()));
-        result.push(("LIST_FN".to_string(), self.list_filename.clone()));
-        result.push(("OPT_RECURSE".to_string(), if self.recurse_enabled { "1".to_string() } else { String::new() }));
-        
-        if !self.rlogin.is_empty() {
-            result.push(("RLOGIN".to_string(), self.rlogin.clone()));
-        }
-        
-        if !self.rpath_base.is_empty() {
-            result.push(("RPATH_BASE".to_string(), self.rpath_base.clone()));
-        }
-        
-        if !self.rpath_template.is_empty() {
-            result.push(("RPATH_TEMPLATE".to_string(), self.rpath_template.clone()));
-        }
-        
-        if !self.local_dir.is_empty() {
-            result.push(("LOCAL_DIR".to_string(), self.local_dir.clone()));
-        }
-        
-        if !self.gm_dir.is_empty() {
-            result.push(("GM_DIR".to_string(), self.gm_dir.clone()));
-        }
-        
-        if !self.remote_dir.is_empty() {
-            result.push(("REMOTE_DIR".to_string(), self.remote_dir.clone()));
-        }
-        
-        if !self.git_args.is_empty() {
-            result.push(("GIT_ARGS".to_string(), self.git_args.clone()));
-        }
-        
-        if !self.config_cmd.is_empty() {
-            result.push(("CONFIG_CMD".to_string(), self.config_cmd.clone()));
-        }
-        
-        if !self.recurse_prefix.is_empty() {
-            result.push(("RECURSE_PREFIX".to_string(), self.recurse_prefix.clone()));
-        }
-        
-        if !self.tree_filter.is_empty() {
-            result.push(("TREE_FILTER".to_string(), self.tree_filter.clone()));
-        }
-        
-        result
-    }
-    
     /// Load configuration from environment variables starting with GRM_
     pub fn load_from_env(&mut self) {
         // Check if this is a recursive invocation and set the recurse_prefix
