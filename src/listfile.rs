@@ -81,7 +81,7 @@ mod tests {
 		let input = "   # hello*world * yep\r\nrest";
 		let (line, remainder) = parse_config_line(input);
 		match line {
-			ListfileLine::Comment{content} => assert_eq!(content, "hello*world * yep"),
+			ParsedLine::Comment{content} => assert_eq!(content, "hello*world * yep"),
 			_ => panic!("expected comment"),
 		}
 		assert_eq!(remainder, "rest");
@@ -92,7 +92,7 @@ mod tests {
 		let input = "#\n";
 		let (line, remainder) = parse_config_line(input);
 		match line {
-			ListfileLine::Comment{content} => assert_eq!(content, ""),
+			ParsedLine::Comment{content} => assert_eq!(content, ""),
 			_ => panic!("expected comment"),
 		}
 		assert_eq!(remainder, "");
@@ -103,10 +103,10 @@ mod tests {
 		let input = "α\\*β*γ\n";
 		let (line, remainder) = parse_config_line(input);
 		match line {
-			ListfileLine::RepoSpec{local, remote, config} => {
+			ParsedLine::RepoSpec{local, remote, param} => {
 				assert_eq!(local, "α*β");
 				assert_eq!(remote, "γ");
-				assert_eq!(config, "");
+				assert_eq!(param, "");
 			}
 			_ => panic!("expected repospec"),
 		}
