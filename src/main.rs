@@ -25,20 +25,9 @@ mod listfile;
 
 use mode::{PrimaryMode, initialize_operations, get_operations, get_mode_string};
 use config::Config;
-use listfile::LineIterator;
 
 /// Separator character used in listfiles
-const LIST_SEPARATOR: char = '*';
-
-pub enum ListfileLine
-{
-	Empty,
-	Whitespace,
-	Comment  {content: String},
-	Config   {key: String, value: String},
-	RepoSpec {local: String, remote: String, param: String},
-	Malformed,
-}
+const CELL_SEPARATOR: char = '*';
 
 /// Git Repository Manager - Rust implementation
 #[derive(Parser, Debug)]
@@ -183,17 +172,19 @@ fn process_repo(config: &Config, repo: &RepoTriple) -> Result<()> {
 
 /// Process a repository listfile
 fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
+    use listfile::ParsedLine;
+
     // Use ConfigLineIterator to handle file reading and line parsing
     let iter = listfile::LineIterator::from_file(list_path)?;
     
     // Process each parsed line
     for line_result in iter {
         // Handle parsing errors
-        let mut cells = match line_result
+        let cells = match line_result
 		{
-			ListfileLine::Config{key, value} => config.set_from_string(&key, value.to_string()),
-			ListfileLine::RepoSpec{local, remote, param} => process_repo_line(config, &local, &remote, &param)?,
-			ListfileLine::Malformed => (), // TODO error
+			ParsedLine::Config{key, value} => config.set_from_string(&key, value.to_string()),
+			ParsedLine::RepoSpec{local, remote, param} => process_repo_line(config, &local, &remote, &param)?,
+			ParsedLine::Malformed => (), // TODO error
 			_ => {},
         };
     }

@@ -7,8 +7,8 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
-use crate::LIST_SEPARATOR;
-use crate::ListfileLine;
+use crate::CELL_SEPARATOR;
+use crate::listfile::ParsedLine;
 
 /// Typed configuration values with proper types for each setting
 #[derive(Debug, Clone)]
@@ -175,15 +175,15 @@ impl Config {
         for line_result in iter {
 			match line_result
 			{
-				ListfileLine::Config{key, value} =>
+				ParsedLine::Config{key, value} =>
 				{
 					// Now that we own key, we can get a reference to it
 	                let key_ref = key.as_str();
 					
 					self.set_from_string(key_ref, value);
 				},
-				ListfileLine::RepoSpec {local, remote, param} => {panic!();},
-				ListfileLine::Malformed => {panic!();},
+				ParsedLine::RepoSpec {local, remote, param} => {panic!();},
+				ParsedLine::Malformed => {panic!();},
 				_ => {},
 			};
         }
