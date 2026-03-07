@@ -5,6 +5,75 @@ use std::io::Write;
 use std::process::{Command, Output, Stdio};
 use anyhow::{Context, Result, anyhow};
 
+pub enum OutputMode {
+	Inherit,
+	Capture,
+	Silent,
+}
+
+pub struct CmdResult {
+	pub exit_code: i32,
+	pub stdout: Option<Vec<u8>>,
+	pub stderr: Option<Vec<u8>>,
+}
+
+pub fn run_cmd(dir: &str, cmd: &[&str], mode: OutputMode) -> Result<CmdResult> {
+	if cmd.is_empty() {
+		return Err(anyhow!("No command specified"));
+	}
+
+	let program = cmd[0];
+	let arguments = &cmd[1..];
+
+	match mode {
+		OutputMode::Inherit => {
+			let status = Command::new(program)
+				.args(arguments)
+				.current_dir(dir)
+				.stdin(Stdio::inherit())
+				.stdout(Stdio::inherit())
+				.stderr(Stdio::inherit())
+				.status()?;
+
+			Ok(CmdResult {
+				exit_code: status.code().unwrap_or(-1),
+				stdout: None,
+				stderr: None,
+			})
+		},
+		OutputMode::Capture => {
+			let output = Command::new(program)
+				.args(arguments)
+				.current_dir(dir)
+				.stdin(Stdio::null())
+				.stdout(Stdio::piped())
+				.stderr(Stdio::piped())
+				.output()?;
+
+			Ok(CmdResult {
+				exit_code: output.status.code().unwrap_or(-1),
+				stdout: Some(output.stdout),
+				stderr: Some(output.stderr),
+			})
+		},
+		OutputMode::Silent => {
+			let output = Command::new(program)
+				.args(arguments)
+				.current_dir(dir)
+				.stdin(Stdio::null())
+				.stdout(Stdio::null())
+				.stderr(Stdio::null())
+				.output()?;
+
+			Ok(CmdResult {
+				exit_code: output.status.code().unwrap_or(-1),
+				stdout: None,
+				stderr: None,
+			})
+		},
+	}
+}
+
 pub struct CapturedOutput {
 	pub exit_code: i32,
 	pub stdout: Vec<u8>,
@@ -41,23 +110,9 @@ pub fn run_in_dir(dir: &str, cmd: &[&str]) -> Result<i32> {
 }
 
 pub fn run_in_dir_status(dir: &str, cmd: &[&str]) -> Result<i32> {
-	if cmd.is_empty() {
-		return Err(anyhow!("No command specified"));
-	}
-
-	let program = cmd[0];
-	let arguments = &cmd[1..];
-
-	let status = Command::new(program)
-		.args(arguments)
-		.current_dir(dir)
-		.stdin(Stdio::inherit())
-		.stdout(Stdio::inherit())
-		.stderr(Stdio::inherit())
-		.status()
+	let result = run_cmd(dir, cmd, OutputMode::Inherit)
 		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
-
-	Ok(status.code().unwrap_or(-1))
+	Ok(result.exit_code)
 }
 
 
@@ -86,62 +141,36 @@ pub fn run_with_stdin_inherited(dir: &str, cmd: &[&str], stdin_bytes: &[u8]) -> 
 	Ok(status.code().unwrap_or(-1))
 }
 
-
-fn run_command_output(dir: &str, cmd: &[&str], stdin: Stdio, stdout: Stdio, stderr: Stdio) -> Result<Output> {
-	if cmd.is_empty() {
-		return Err(anyhow!("No command specified"));
-	}
-
-	let program = cmd[0];
-	let arguments = &cmd[1..];
-
-	Command::new(program)
-		.args(arguments)
-		.current_dir(dir)
-		.stdin(stdin)
-		.stdout(stdout)
-		.stderr(stderr)
-		.output()
-		.map_err(|err| err.into())
-}
-
 pub fn run_in_dir_capture(dir: &str, cmd: &[&str]) -> Result<CapturedOutput> {
-	if cmd.is_empty() {
-		return Err(anyhow!("No command specified"));
-	}
-
-	let output = run_command_output(dir, cmd, Stdio::null(), Stdio::piped(), Stdio::piped())
+	let result = run_cmd(dir, cmd, OutputMode::Capture)
 		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
-
-	let exit_code = output.status.code().unwrap_or(-1);
 	Ok(CapturedOutput {
-		exit_code,
-		stdout: output.stdout,
-		stderr: output.stderr,
+		exit_code: result.exit_code,
+		stdout: result.stdout.unwrap_or_default(),
+		stderr: result.stderr.unwrap_or_default(),
 	})
 }
 
 /// Run a command in a specific directory, capturing output but not displaying it
 /// Returns the exit code
 pub fn run_command_silent(dir: &str, cmd: &[&str]) -> Result<i32> {
-    // Early validation
-    if cmd.is_empty() {
-        return Err(anyhow!("No command specified"));
-    }
-    
-    let output = run_command_output(dir, cmd, Stdio::null(), Stdio::null(), Stdio::null())
-        .with_context(|| format!("Failed to execute command: {:?}", cmd))?;
-    
-    // Get exit code, which is None if process was terminated by a signal
-    let exit_code = output.status.code().unwrap_or(-1);
-    
-    Ok(exit_code)
+	// Early validation
+	if cmd.is_empty() {
+		return Err(anyhow!("No command specified"));
+	}
+
+	let output = run_cmd(dir, cmd, OutputMode::Silent)
+		.with_context(|| format!("Failed to execute command: {:?}", cmd))?;
+
+	Ok(output.exit_code)
 }
 
 pub fn run_git_status(dir: &str, args: &[&str]) -> Result<i32> {
 	let mut cmd_args = vec!["git"];
 	cmd_args.extend(args);
-	run_in_dir_status(dir, &cmd_args)
+	let output = run_cmd(dir, &cmd_args, OutputMode::Inherit)
+		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd_args))?;
+	Ok(output.exit_code)
 }
 
 pub fn run_git_capture(local_path: &str, args: &[&str]) -> Result<CapturedOutput> {
