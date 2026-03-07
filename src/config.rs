@@ -7,6 +7,8 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
+use crate::{cat_paths, remote_url::build_remote_url};
+
 macro_rules! annotated_struct {
     (
         $(#[$attr:meta])*
@@ -183,5 +185,126 @@ impl Config {
         }
         
         Ok(())
+    }
+}
+
+pub struct RepoSpec
+{
+    pub remote_rel: String,
+    pub local_rel: String,
+    pub cfg_param: String,
+}
+
+pub struct RepoPaths
+{
+    pub remote: String,
+    pub local: String,
+    pub config: String,
+}
+
+#[derive(Debug)]
+pub struct FullRepoSpec {
+    pub remote_path: String,
+    pub remote_url: String,
+    pub local_path: String,
+    pub cfg_param: String, // TODO REMOVE
+}
+
+impl RepoSpec
+{
+	/// Extract raw repository path components from config file cells
+	pub fn from_cells(cells: [&str; 3]) -> Self
+	{
+        use regex::Regex;
+
+		// First cell is always the remote relative path
+		let remote_rel = cells[0];
+		
+		// Second cell is local relative path, defaults to repo_name if empty or missing
+		let local_rel = if cells.len() > 1 && !cells[1].is_empty() {
+			cells[1].to_string()
+		} else {
+			// Extract repo name from remote path for default values
+			let re = Regex::new(r"([^/]+?)(?:\.git)?$").unwrap();
+			match re.captures(&remote_rel) {
+				Some(caps) => caps.get(1).map_or(String::new(), |m| m.as_str().to_string()),
+				None => String::new(),
+			}
+		};
+		
+		// Third cell is media relative path, defaults to local_rel if empty or missing
+		let media_rel = if cells.len() > 2 && !cells[2].is_empty() {
+			cells[2].to_string()
+		} else {
+			local_rel.clone()
+		};
+		
+		Self {
+			remote_rel: remote_rel.to_string(),
+			local_rel,
+			cfg_param: media_rel,
+		}
+	}
+}
+
+impl RepoPaths
+{
+	pub fn from_spec(spec: RepoSpec,config: &Config) -> Self
+	{
+		Self
+        {
+            remote: cat_paths( // TODO do this in one go?
+                &config.rpath_base,
+                &cat_paths(&config.remote_dir, &spec.remote_rel)),
+            local: cat_paths(&config.local_dir, &spec.local_rel),
+            config: cat_paths(&config.gm_dir, &spec.cfg_param),
+        }
+	}
+}
+
+/// Get formatted remote URL based on configuration and remote relative path
+fn get_remote_url(config: &Config, remote_rel_path: &str) -> String {
+	if config.rpath_base.is_empty()
+	{
+		panic!("RPATH_BASE must exist!");
+	}
+
+	if config.remote_dir.is_empty()
+	{
+		panic!("REMOTE_DIR must exist!");
+	}
+
+	if config.rlogin.is_empty()
+	{
+		panic!("RLOGIN must exist!");
+	}
+
+    // Get the base path, defaulting to empty string if not set
+    let base_path = &config.rpath_base;
+
+    // Use cat_paths to handle paths consistently
+    let full_repo_path = cat_paths(&config.remote_dir, remote_rel_path);
+    
+    // Choose URL format based on configuration
+    if !config.rlogin.is_empty() {
+        // We have login information
+        build_remote_url(&config.rlogin, base_path, &full_repo_path)
+    } else {
+        // No login info
+        build_remote_url("", base_path, &full_repo_path)
+    }
+}
+
+impl FullRepoSpec {
+    pub fn from_paths(paths: RepoPaths, config: &Config) -> Self {
+        let remote_url = get_remote_url(config, &paths.remote);
+
+        Self
+        {
+            remote_path: paths.remote,
+            remote_url,
+            local_path: paths.local,
+            cfg_param: paths.config,
+        }
     }
 }

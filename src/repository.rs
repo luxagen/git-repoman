@@ -6,28 +6,10 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 use anyhow::{Context, Result, anyhow};
-use crate::Config;
+use crate::config::{Config,RepoSpec};
 use crate::invoke;
 
-// Shared repository specification struct
-#[derive(Debug, Clone)]
-pub struct FullRepoSpec {
-    pub remote_path: String,
-    pub remote_url: String,
-    pub local_path: String,
-    pub cfg_param: String, // TODO REMOVE
-}
-
-impl FullRepoSpec {
-    pub fn new(remote_path: String, local_path: String, media_path: String, remote_url: String) -> Self {
-        Self {
-            remote_path,
-            remote_url,
-            local_path,
-            cfg_param: media_path,
-        }
-    }
-}
+pub use crate::config::FullRepoSpec;
 
 /// Check if directory is a Git repository root
 pub fn is_dir_repo_root(local_path: &str) -> Result<bool> {
@@ -279,11 +261,13 @@ fi
 
 /// Run a git command in the repository (public function called from main.rs)
 pub fn run_git_command(local_path: &str, args_str: &str) -> Result<()> {
-    // Split the arguments string into individual arguments
-    let args: Vec<&str> = args_str.split_whitespace().collect();
-    
-    // Use our standardized helper internally
-    run_git_cmd_internal(local_path, &args)
+	let args = match shlex::split(args_str) {
+		Some(v) => v,
+		None => return Err(anyhow!("Invalid git args quoting")),
+	};
+
+	let args: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+	run_git_cmd_internal(local_path, &args)
 }
 
 /// Execute the CONFIG_CMD in the specified directory
