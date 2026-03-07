@@ -221,27 +221,27 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, cfg_param: &str
 	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", paths.remote, paths.local, paths.config);
 
     let remote_url = get_remote_url(&config, &paths.remote);
-    let rt = FullRepoSpec::new(
-        &paths.remote,
-        &paths.local,
-        &paths.config,
-        &remote_url,
+    let full = FullRepoSpec::new(
+        paths.remote,
+        paths.local,
+        paths.config,
+        remote_url,
     );
     
-	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ U:_{}_", paths.remote, paths.local, paths.config, rt.remote_url);
+	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ U:_{}_", full.remote_path, full.local_path, full.cfg_param, full.remote_url);
 
     // Filter out repositories that are not in or below the current directory
-    if !passes_tree_filter(&config.tree_filter, &rt.local_path) {
+    if !passes_tree_filter(&config.tree_filter, &full.local_path) {
         return Ok(());
     }
     
     if get_operations().debug {
-        eprintln!("Potential target: {}", &rt.local_path);
+        eprintln!("Potential target: {}", &full.local_path);
     }
     
     // Process the repository
-    if let Err(err) = process_repo(config, &rt) {
-        eprintln!("Error processing {}: {}", &rt.local_path, err);
+    if let Err(err) = process_repo(config, &full) {
+        eprintln!("Error processing {}: {}", &full.local_path, err);
     }
     
     Ok(())

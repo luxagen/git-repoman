@@ -1,6 +1,7 @@
 ﻿// GRM - Git Repository Manager
 // Copyright © luxagen, 2025-present
 
+use std::borrow::Cow;
 use std::io::Write;
 use std::path::Path;
 use std::process::Command;
@@ -18,13 +19,12 @@ pub struct FullRepoSpec {
 }
 
 impl FullRepoSpec {
-    /// Create a new RepoTriple with remote_path, local_path, and media_path; remote_url is initialized to empty
-    pub fn new(remote_path: &str, local_path: &str, media_path: &str, remote_url: &str) -> Self {
+    pub fn new(remote_path: String, local_path: String, media_path: String, remote_url: String) -> Self {
         Self {
-            remote_path: remote_path.to_string(),
-            remote_url: remote_url.to_string(),
-            local_path: local_path.to_string(),
-            cfg_param: media_path.to_string(),
+            remote_path,
+            remote_url,
+            local_path,
+            cfg_param: media_path,
         }
     }
 }
@@ -294,13 +294,13 @@ pub fn execute_config_cmd(repo: &FullRepoSpec, config: &Config) -> Result<()> {
     }
 
     // Use shell-escape crate to robustly escape the media_path argument for shell usage
-    let inner_cmd = format!("{config_cmd} {}", shell_escape::unix::escape(repo.cfg_param.into()));
+    let inner_cmd = format!("{config_cmd} {}", shell_escape::unix::escape(Cow::Borrowed(&repo.cfg_param)));
 
 	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
 	// process is MinGW or Cygwin; we must rely on `sh` being on the path
     let status = Command::new("sh".to_string())
         .args(vec!["-c".to_string(), inner_cmd.clone()])
-        .current_dir(repo.local_path)
+        .current_dir(&repo.local_path)
         .stdin(std::process::Stdio::inherit())
         .stdout(std::process::Stdio::inherit())
         .stderr(std::process::Stdio::inherit())
