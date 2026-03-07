@@ -165,7 +165,7 @@ impl Config {
     pub fn load_from_file(&mut self, path: &Path) -> Result<()> {
 		eprintln!("config.load_from_file: {}", path.display());
 
-        let iter = super::listfile::LineIterator::from_file(path)?;
+        let iter = crate::listfile::LineIterator::from_file(path)?;
 
 		eprintln!("created iterator");
 
