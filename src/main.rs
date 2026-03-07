@@ -86,7 +86,7 @@ fn determine_repo_state(path: &str) -> Result<RepoState> {
 
 /// Process a single repository
 #[allow(unused_assignments)] // Stupid compiler
-fn process_repo(config: &Config, repo: &RepoTriple) -> Result<()> {
+fn process_repo(config: &Config, repo: &FullRepoSpec) -> Result<()> {
 //	eprintln!("{}", );
     // Get operations
     let operations = get_operations();
@@ -218,7 +218,7 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, param: &str) ->
     let remote_url = get_remote_url(&config, &remote);
 	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ U:_{}_", remote, local, media, remote_url);
 
-    let rt = RepoTriple::new(
+    let rt = FullRepoSpec::new(
         &remote,
         &local,
         &media,
@@ -243,7 +243,7 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, param: &str) ->
 }
 
 // Use the shared RepoTriple from repository.rs
-use crate::repository::RepoTriple;
+use crate::repository::FullRepoSpec;
 
 /// Check if a repository local path passes the tree filter
 /// Returns true if there is no filter or if the path is within the filter

@@ -10,14 +10,14 @@ use crate::invoke;
 
 // Shared repository specification struct
 #[derive(Debug, Clone)]
-pub struct RepoTriple<'a> {
+pub struct FullRepoSpec<'a> {
     pub remote_path: &'a str,
     pub remote_url: &'a str,
     pub local_path: &'a str,
     pub media_path: &'a str, // TODO REMOVE
 }
 
-impl<'a> RepoTriple<'a> {
+impl<'a> FullRepoSpec<'a> {
     /// Create a new RepoTriple with remote_path, local_path, and media_path; remote_url is initialized to empty
     pub fn new(remote_path: &'a str, local_path: &'a str, media_path: &'a str, remote_url: &'a str) -> Self {
         Self {
@@ -89,7 +89,7 @@ fn run_git_command_with_warning(local_path: &str, args: &[&str], operation: &str
 }
 
 /// Clone a repository without checking it out
-pub fn clone_repo_no_checkout(repo: &RepoTriple) -> Result<()> {
+pub fn clone_repo_no_checkout(repo: &FullRepoSpec) -> Result<()> {
     println!("Cloning repository \"{}\" into \"{}\"", repo.remote_url, repo.local_path);
     let status = Command::new("git")
         .arg("clone")
@@ -109,14 +109,14 @@ pub fn clone_repo_no_checkout(repo: &RepoTriple) -> Result<()> {
 
 /// Configure a repository using the provided command
 
-pub fn configure_repo(repo: &RepoTriple, config: &Config) -> Result<()> {
+pub fn configure_repo(repo: &FullRepoSpec, config: &Config) -> Result<()> {
     execute_config_cmd(repo, config)
 }
 
 // TODO: figure out whether to always fetch
 
 /// Update the remote URL for a repository
-pub fn set_remote(repo: &RepoTriple) -> Result<()> {
+pub fn set_remote(repo: &FullRepoSpec) -> Result<()> {
     let status = invoke::run_command_silent(repo.local_path, &["git", "remote", "set-url", "origin", repo.remote_url])?;
     if status == 2 {
         println!("Adding remote origin");
@@ -156,7 +156,7 @@ pub fn check_out(local_path: &str) -> Result<()> {
 
 /// Create a new repository
 /// Returns true if this was a virgin (newly initialized) repository that needs a checkout after the remote is added
-pub fn create_remote(repo: &RepoTriple, config: &Config, is_repo: bool) -> Result<bool> {
+pub fn create_remote(repo: &FullRepoSpec, config: &Config, is_repo: bool) -> Result<bool> {
     println!("Creating new repository at \"{}\" with remote \"{}\"", repo.local_path, repo.remote_url);
     
     // Check required configuration
@@ -287,7 +287,7 @@ pub fn run_git_command(local_path: &str, args_str: &str) -> Result<()> {
 }
 
 /// Execute the CONFIG_CMD in the specified directory
-pub fn execute_config_cmd(repo: &RepoTriple, config: &Config) -> Result<()> {
+pub fn execute_config_cmd(repo: &FullRepoSpec, config: &Config) -> Result<()> {
     let config_cmd = &config.config_cmd;
     if config_cmd.is_empty() {
         return Ok(()); // No command to execute
