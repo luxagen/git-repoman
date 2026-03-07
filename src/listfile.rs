@@ -6,8 +6,6 @@ use std::io::Read;
 use std::path::Path;
 use anyhow::{Context, Result, anyhow};
 
-use crate::CELL_SEPARATOR;
-
 pub enum ParsedLine
 {
 	Empty,
@@ -136,6 +134,8 @@ fn consume_line_ending(mut input: &str) -> &str {
 }
 
 fn parse_config_line(input: &str) -> (ParsedLine, &str) {
+	use crate::CELL_SEPARATOR;
+
 	// 1. Check for empty line
 	if input.is_empty() {
 		return (ParsedLine::Empty, input);
@@ -260,6 +260,8 @@ fn parse_config_line_cells(input: &str) -> Result<(Vec<String>, &str)> {
 /// - On success: A tuple with the parsed cell and remaining input
 /// - On error: An anyhow error explaining the issue
 fn parse_config_cell(input: &str) -> Result<(String, &str)> {
+	use crate::CELL_SEPARATOR;
+
     // Skip leading whitespace
     let input = skip_whitespace(input);
     

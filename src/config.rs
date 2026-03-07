@@ -7,9 +7,6 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
-use crate::CELL_SEPARATOR;
-use crate::listfile::ParsedLine;
-
 /// Typed configuration values with proper types for each setting
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -172,7 +169,10 @@ impl Config {
 
         // TODO sort out this tree
 
-        for line_result in iter {
+        for line_result in iter
+        {
+            use crate::listfile::ParsedLine;
+
 			match line_result
 			{
 				ParsedLine::Config{key, value} =>
