@@ -275,8 +275,8 @@ impl FullRepoSpec {
     }
 }
 
-/// Get formatted remote URL based on configuration and remote relative path
-fn get_remote_url(config: &Config, remote_rel_path: &str) -> String {
+/// Get formatted remote URL based on configuration and a fully-compounded remote path
+fn get_remote_url(config: &Config, remote_path: &str) -> String {
 	if config.rpath_base.is_empty()
 	{
 		panic!("RPATH_BASE must exist!");
@@ -292,20 +292,7 @@ fn get_remote_url(config: &Config, remote_rel_path: &str) -> String {
 		panic!("RLOGIN must exist!");
 	}
 
-    // Get the base path, defaulting to empty string if not set
-    let base_path = &config.rpath_base;
-
-    // Use cat_paths to handle paths consistently
-    let full_repo_path = cat_paths(&config.remote_dir, remote_rel_path);
-    
-    // Choose URL format based on configuration
-    if !config.rlogin.is_empty() {
-        // We have login information
-        build_remote_url(&config.rlogin, base_path, &full_repo_path)
-    } else {
-        // No login info
-        build_remote_url("", base_path, &full_repo_path)
-    }
+	build_remote_url(&config.rlogin, "", remote_path)
 }
 
 fn cat_paths(base: &str, rel: &str) -> String {
@@ -336,27 +323,35 @@ fn build_remote_url(rlogin: &str, remote_dir: &str, repo_path: &str) -> String {
     }
 
     let login = rlogin.trim_end_matches('/');
-    if login.contains("://") {
-        // Protocol-based URL (http://, https://, ssh://, etc)
-        let login_parts: Vec<&str> = login.splitn(2, "://").collect();
-        let protocol = login_parts[0];
-        let domain = login_parts[1].trim_end_matches('/');
-        let path = format!("{}/{}", remote_dir.trim_matches('/'), repo_path.trim_start_matches('/'));
-        match protocol {
-            "http" | "https" => {
-                let full_url = format!("{}://{}/{}", protocol, domain.trim_end_matches('/'), path);
-                // Try to parse and normalize with gix-url
-                if let Ok(parsed) = gix_url::parse(full_url.as_bytes().into()) {
+    	if login.contains("://") {
+		// Protocol-based URL (http://, https://, ssh://, etc)
+		let login_parts: Vec<&str> = login.splitn(2, "://").collect();
+		let protocol = login_parts[0];
+		let domain = login_parts[1].trim_end_matches('/');
+		let path = if remote_dir.trim_matches('/').is_empty() {
+			repo_path.trim_start_matches('/').to_string()
+		} else {
+			format!("{}/{}", remote_dir.trim_matches('/'), repo_path.trim_start_matches('/'))
+		};
+		match protocol {
+			"http" | "https" => {
+				let full_url = format!("{}://{}/{}", protocol, domain.trim_end_matches('/'), path);
+				// Try to parse and normalize with gix-url
+				if let Ok(parsed) = gix_url::parse(full_url.as_bytes().into()) {
                     return parsed.to_string();
                 }
                 // Fall back to simple string formatting if parsing fails
                 full_url
             },
-            _ => format!("{}://{}/{}", protocol, domain, path)
-        }
-    } else {
-        format!("{}:{}/{}", login, remote_dir.trim_matches('/'), repo_path.trim_start_matches('/'))
-    }
+            			_ => format!("{}://{}/{}", protocol, domain, path)
+		}
+	} else {
+		if remote_dir.trim_matches('/').is_empty() {
+			format!("{}:{}", login, repo_path.trim_start_matches('/'))
+		} else {
+			format!("{}:{}/{}", login, remote_dir.trim_matches('/'), repo_path.trim_start_matches('/'))
+		}
+	}
 }
 
 #[cfg(test)]
@@ -405,5 +400,36 @@ mod tests {
 			.expect("LIST_FN must be present in all_values()");
 		assert_eq!(list_fn, ".grm.repos");
 		assert!(!list_fn.starts_with('"') && !list_fn.ends_with('"'));
+	}
+
+	#[test]
+	fn repo_paths_do_not_compound_recurse_prefix_by_default() {
+		let mut config = Config::new();
+		config.local_dir = "local".to_string();
+		config.gm_dir = "gm".to_string();
+		config.rpath_base = "rbase".to_string();
+		config.remote_dir = "".to_string();
+		config.recurse_prefix = "Ian/Ade/".to_string();
+
+		let spec = RepoSpec {
+			remote_rel: "remote".to_string(),
+			local_rel: "Guardian_Angel".to_string(),
+			cfg_param: "Guardian_Angel".to_string(),
+		};
+
+		let paths = RepoPaths::from_spec(spec, &config);
+		assert_eq!(paths.local, "local/Guardian_Angel");
+		assert_eq!(paths.config, "gm/Guardian_Angel");
+	}
+
+	#[test]
+	fn remote_url_does_not_duplicate_base_segments_when_remote_dir_empty() {
+		let mut config = Config::new();
+		config.rlogin = "ssh://git@git.luxagen.net".to_string();
+		config.rpath_base = "git/music-projects".to_string();
+		config.remote_dir = "".to_string();
+
+		let url = get_remote_url(&config, "git/music-projects/_IDEAS");
+		assert_eq!(url, "ssh://git@git.luxagen.net/git/music-projects/_IDEAS");
 	}
 }

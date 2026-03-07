@@ -254,15 +254,20 @@ fn parse_config_line(input: &str) -> (ParsedLine, &str) {
 	}
 	
 	// 6. Otherwise map present values into RepoSpec
-	(
-		ParsedLine::RepoSpec
-		{
-			remote: cells[0].clone(),
-			local: cells.get(1).cloned().unwrap_or_else(|| cells[0].clone()),
-			param: cells.get(2).cloned().unwrap_or_else(|| cells.get(1).cloned().unwrap_or_else(|| cells[0].clone())),
-		},
-		remainder,
-	)
+	{
+		let remote = cells[0].clone();
+		let local = cells.get(1).cloned().unwrap_or_else(|| remote.clone());
+		let param = cells.get(2).cloned().unwrap_or_else(|| local.clone());
+		(
+			ParsedLine::RepoSpec
+			{
+				remote,
+				local,
+				param,
+			},
+			remainder,
+		)
+	}
 }
 
 /// Parse a single cell from a configuration or repository file line.
