@@ -53,10 +53,6 @@ pub fn run_in_dir_status(dir: &str, program: &str, args: &[&str]) -> Result<i32>
 	Ok(status.code().unwrap_or(-1))
 }
 
-pub fn run_git_status(dir: &str, args: &[&str]) -> Result<i32> {
-	run_in_dir_status(dir, "git", args)
-}
-
 pub fn run_with_stdin_inherited(dir: &str, program: &str, args: &[&str], stdin_bytes: &[u8]) -> Result<i32> {
 	let mut child = Command::new(program)
 		.args(args)
@@ -105,12 +101,6 @@ pub fn run_in_dir_capture(dir: &str, cmd: &[&str]) -> Result<CapturedOutput> {
 	})
 }
 
-pub fn run_git_capture(local_path: &str, args: &[&str]) -> Result<CapturedOutput> {
-	let mut cmd_args = vec!["git"];
-	cmd_args.extend(args);
-	run_in_dir_capture(local_path, &cmd_args)
-}
-
 /// Run a command in a specific directory, capturing output but not displaying it
 /// Returns the exit code
 pub fn run_command_silent(dir: &str, cmd: &[&str]) -> Result<i32> {
@@ -129,6 +119,16 @@ pub fn run_command_silent(dir: &str, cmd: &[&str]) -> Result<i32> {
     let exit_code = output.status.code().unwrap_or(-1);
     
     Ok(exit_code)
+}
+
+pub fn run_git_status(dir: &str, args: &[&str]) -> Result<i32> {
+	run_in_dir_status(dir, "git", args)
+}
+
+pub fn run_git_capture(local_path: &str, args: &[&str]) -> Result<CapturedOutput> {
+	let mut cmd_args = vec!["git"];
+	cmd_args.extend(args);
+	run_in_dir_capture(local_path, &cmd_args)
 }
 
 pub fn run_git_cmd(local_path: &str, args: &[&str], operation_for_warning: Option<&str>) -> Result<()> {
