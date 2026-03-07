@@ -17,19 +17,15 @@ use colored::Colorize;
 
 #[macro_use]
 mod annotated_struct;
+
 mod config;
 mod invoke;
 mod repository;
 mod mode;
-mod remote_url;
 mod listfile;
 
 use mode::{PrimaryMode, initialize_operations, get_operations, get_mode_string};
-use config::Config;
-
-pub use config::RepoPaths;
-pub use config::RepoSpec;
-pub use config::FullRepoSpec;
+pub use config::{RepoPaths,RepoSpec,FullRepoSpec,Config};
 
 /// Separator character used in listfiles
 const CELL_SEPARATOR: char = '*';
