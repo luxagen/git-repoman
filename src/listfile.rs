@@ -20,10 +20,14 @@ impl LineIterator {
         // Read the entire file into memory in binary mode
         let mut file = File::open(path)
             .with_context(|| format!("Failed to open file: {}", path.display()))?;
-        
-        let mut content = String::new();
-        file.read_to_string(&mut content)
+
+        let mut bytes = Vec::new();
+        file.read_to_end(&mut bytes)
             .with_context(|| format!("Failed to read file: {}", path.display()))?;
+
+        let content = std::str::from_utf8(&bytes)
+            .map_err(|_| anyhow!("File is not valid UTF-8: {}", path.display()))?
+            .to_string();
         
         Ok(Self {
             content,
@@ -32,111 +36,200 @@ impl LineIterator {
     }
 }
 
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn parse_comment_preserves_separators() {
+		let input = "   # hello*world * yep\r\nrest";
+		let (line, remainder) = parse_config_line(input);
+		match line {
+			ListfileLine::Comment{content} => assert_eq!(content, "hello*world * yep"),
+			_ => panic!("expected comment"),
+		}
+		assert_eq!(remainder, "rest");
+	}
+
+	#[test]
+	fn parse_comment_hash_only() {
+		let input = "#\n";
+		let (line, remainder) = parse_config_line(input);
+		match line {
+			ListfileLine::Comment{content} => assert_eq!(content, ""),
+			_ => panic!("expected comment"),
+		}
+		assert_eq!(remainder, "");
+	}
+
+	#[test]
+	fn parse_escaped_separator_with_unicode() {
+		let input = "α\\*β*γ\n";
+		let (line, remainder) = parse_config_line(input);
+		match line {
+			ListfileLine::RepoSpec{local, remote, config} => {
+				assert_eq!(local, "α*β");
+				assert_eq!(remote, "γ");
+				assert_eq!(config, "");
+			}
+			_ => panic!("expected repospec"),
+		}
+		assert_eq!(remainder, "");
+	}
+
+	#[test]
+	fn parse_trailing_backslash_errors() {
+		let err = parse_config_cell("abc\\").unwrap_err();
+		assert!(format!("{}", err).contains("Trailing backslash"));
+	}
+}
+
 impl Iterator for LineIterator {
-    type Item = Result<Vec<String>>;
+    type Item = ListfileLine;
     
     fn next(&mut self) -> Option<Self::Item> {
-        // If we've reached the end of the content, stop iteration
-        if self.position >= self.content.len() {
-            return None;
-        }
+		// If we've reached the end of the content, stop iteration.
+		if self.position >= self.content.len() {
+			return None;
+		}
         
         let remainder = &self.content[self.position..];
-        let parse_result = parse_config_line(remainder);
+		let (line, new_remainder) = parse_config_line(remainder);
         
-        match parse_result {
-            Ok((cells, new_remainder)) => {
-                // Update position for next iteration
-                self.position = self.content.len() - new_remainder.len();
+		// Update position for next iteration
+		debug_assert!({
+			let base = self.content.as_ptr() as usize;
+			let end = base + self.content.len();
+			let ptr = new_remainder.as_ptr() as usize;
+			ptr >= base && ptr <= end
+		});
 
-				if cells.is_empty() || cells[0].starts_with('#')
-				{
-					return self.next();
-				}
-
-                Some(Ok(cells))
-            },
-            Err(err) => {
-                // Simply propagate the error directly
-                Some(Err(err))
-            }
-        }
+		let new_pos = self.content.len() - new_remainder.len();
+		debug_assert!(self.content.is_char_boundary(new_pos));
+		self.position = new_pos;
+		Some(line)
     }
 }
 
-/// Parse a line into a vector of cells and the remaining unparsed portion.
-/// Returns a vector containing each parsed cell and the
-/// remaining input after parsing stopped.
-/// 
-/// The function stops parsing when:
-/// - It reaches the end of the input
-/// - It can't make progress (current position doesn't change after parsing)
-/// - It encounters a delimiter or line ending
-///
-/// Any line endings (CR, LF, or CRLF) at the end of the line are consumed.
-///
-/// # Arguments
-/// - `input`: The input string to parse
-///
-/// # Returns
-/// A Result containing:
-/// - On success: A tuple with parsed cells and remaining input
-/// - On error: An error from cell parsing (like trailing backslash)
-fn parse_config_line(input: &str) -> Result<(Vec<String>, &str)> {
-    // Skip empty lines
-    if input.is_empty() {
-        return Ok((Vec::new(), input));
-    }
-    
-    // Parse the first cell to check for comments (this will skip whitespace)
-    let (first_cell, first_remainder) = parse_config_cell(input)?;
-    
-    // Start building cells with the first cell we already parsed
-    let mut cells = Vec::new();
-    cells.push(first_cell);
-    
-    let mut remainder = first_remainder;
-    
-    // Parse cells until we can't make progress
-    loop {
-        // Check if we're at a separator 
-        if !remainder.starts_with(LIST_SEPARATOR) {
-            break;
-        }
-        
-        // Skip past the separator and continue parsing
-        remainder = &remainder[LIST_SEPARATOR.len_utf8()..];
-        
-        let (cell, new_remainder) = parse_config_cell(remainder)?;
+pub enum ListfileLine
+{
+	Empty,
+	Whitespace,
+	Comment  {content: String},
+	Config   {key: String, value: String},
+	RepoSpec {local: String, remote: String, config: String},
+	Malformed,
+}
 
-        // Add the cell to our vector
-        cells.push(cell);
-        
-        // If we couldn't make progress, stop parsing
-        if remainder == new_remainder {
-            break;
-        }
-        
-        remainder = new_remainder;
-    }
-    
-    // Handle line endings
-    match remainder.chars().next() {
-        None => {} // EOF
-        Some('\r') => { // CR or CRLF
-            remainder = &remainder['\r'.len_utf8()..];
-            // If CRLF, consume the LF too
-            if remainder.starts_with('\n') {
-                remainder = &remainder['\n'.len_utf8()..];
-            }
-        }
-        Some('\n') => { // Just LF
-            remainder = &remainder['\n'.len_utf8()..];
-        }
-        _ => {} // No line ending but we're done parsing cells
-    }
+/// Consume a line ending (CR, LF, or CRLF) from the start of input.
+/// Returns the remaining input after the line ending.
+fn consume_line_ending(mut input: &str) -> &str {
+	if input.starts_with('\r') {
+		input = &input['\r'.len_utf8()..];
+		if input.starts_with('\n') {
+			input = &input['\n'.len_utf8()..];
+		}
+	} else if input.starts_with('\n') {
+		input = &input['\n'.len_utf8()..];
+	}
+	input
+}
 
-    Ok((cells, remainder))
+fn parse_config_line(input: &str) -> (ListfileLine, &str) {
+	// 1. Check for empty line
+	if input.is_empty() {
+		return (ListfileLine::Empty, input);
+	}
+
+	// 1a. If line begins with optional whitespace and then '#', treat as comment.
+	// Preserve separators literally by slicing from the original line rather than using cell parsing.
+	let line_end = input.find(|c| c == '\r' || c == '\n').unwrap_or(input.len());
+	let line = &input[..line_end];
+	let line_remainder = &input[line_end..];
+	let ws_skipped = skip_whitespace(line);
+	if ws_skipped.starts_with('#') {
+		let after_hash = ws_skipped.strip_prefix('#').unwrap_or("");
+		let content_str = skip_whitespace(after_hash);
+		let remainder = consume_line_ending(line_remainder);
+		return (ListfileLine::Comment{content: content_str.to_string()}, remainder);
+	}
+	
+	// 2. Attempt first cell parse
+	let (first_cell, mut remainder) = match parse_config_cell(input)
+	{
+		Ok(p) => p,
+		Err(err) => return (ListfileLine::Malformed, ""),
+	};
+
+	// 3. Continue parsing cells into vector until EOL
+	let mut cells = vec![first_cell];
+	while remainder.starts_with(LIST_SEPARATOR)
+	{
+		remainder = &remainder[LIST_SEPARATOR.len_utf8()..];
+		cells.push(
+			match parse_config_cell(remainder)
+			{
+				Err(e) => {panic!();},
+				Ok((cell, new_remainder)) =>
+				{
+					remainder = new_remainder;
+					cell
+				},
+			}
+		);
+	}
+	
+	// Consume line ending
+	remainder = consume_line_ending(remainder);
+	
+	// 4. If count>3, malformed
+	if cells.len() > 3 {
+		return (ListfileLine::Malformed, remainder);
+	}
+	
+	// 5. If first cell empty, config line or whitespace
+	if cells[0].is_empty() {
+		// Check for whitespace-only line
+		if cells.len() == 1 {
+			return (ListfileLine::Whitespace, remainder);
+		}
+		
+		// Config line validation
+		if cells[1].is_empty() {
+			return (ListfileLine::Malformed, remainder);
+		}
+		return (
+			ListfileLine::Config
+			{
+				key: cells[1].clone(),
+				value: cells.get(2).cloned().unwrap_or_default(),
+			},
+			remainder);
+	}
+	
+	// 6. Otherwise map present values into RepoSpec
+	(
+		ListfileLine::RepoSpec
+		{
+			local: cells[0].clone(),
+			remote: cells.get(1).cloned().unwrap_or_default(),
+			config: cells.get(2).cloned().unwrap_or_default(),
+		},
+		remainder,
+	)
+}
+
+fn parse_config_line_cells(input: &str) -> Result<(Vec<String>, &str)> {
+	let (line, remainder) = parse_config_line(input);
+	let cells = match line {
+		ListfileLine::Empty => Vec::new(),
+		ListfileLine::Whitespace => vec![String::new()],
+		ListfileLine::Comment{content} => vec![format!("#{}", content)],
+		ListfileLine::Config{key, value} => vec![String::new(), key, value],
+		ListfileLine::RepoSpec{local, remote, config} => vec![local, remote, config],
+		ListfileLine::Malformed => Vec::new(),
+	};
+	Ok((cells, remainder))
 }
 
 /// Parse a single cell from a configuration or repository file line.

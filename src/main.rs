@@ -171,36 +171,23 @@ fn process_repo(config: &Config, repo: &RepoTriple) -> Result<()> {
     }
 }
 
+use crate::listfile::ListfileLine;
+
 /// Process a repository listfile
-fn process_listfile(config: &mut Config, list_path: &Path) -> Result<()> {
+fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
     // Use ConfigLineIterator to handle file reading and line parsing
     let iter = listfile::LineIterator::from_file(list_path)?;
     
     // Process each parsed line
     for line_result in iter {
         // Handle parsing errors
-        let mut cells = match line_result {
-            Ok(cells) => cells,
-            Err(err) => {
-                eprintln!("Error parsing line: {}", err);
-                continue;
-            }
-        };
-
-		while cells.len() < 3
+        let mut cells = match line_result
 		{
-			cells.push("".to_string());
-		}
-
-        // Skip empty lines and comments (already handled by ConfigLineIterator)
-        if cells.is_empty() {
-            continue;
-        }
-        
-        // Process the repository line cells
-        if let Err(err) = process_repo_line(config, cells) {
-            eprintln!("Error processing repository line: {}", err);
-        }
+			ListfileLine::Config{key, value} => {}, // TODO valid
+			ListfileLine::RepoSpec{local, remote, config} => {}, // TODO valid
+			ListfileLine::Malformed => {}, // TODO error
+			_ => {},
+        };
     }
     
     // Process subdirectories if recursion is enabled
@@ -445,11 +432,11 @@ fn main() -> Result<()> {
    
     // Process listfile
     if list_path.exists() {
-        if let Err(err) = process_listfile(&mut config, &list_path) {
-            eprintln!("Error processing listfile: {}", err);
+        if let Err(err) = process_repofile(&mut config, &list_path) {
+            eprintln!("Error processing repofile: {}", err);
         }
     } else {
-        eprintln!("No listfile found");
+        eprintln!("No repofile found");
     }
     
     Ok(())

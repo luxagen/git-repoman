@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
 use crate::LIST_SEPARATOR;
+use crate::listfile::ListfileLine;
 
 /// Typed configuration values with proper types for each setting
 #[derive(Debug, Clone)]
@@ -172,55 +173,19 @@ impl Config {
         // TODO sort out this tree
 
         for line_result in iter {
-			eprintln!("A");
-            // First handle any parsing errors
-            let mut cells = match line_result {
-                Ok(cells) => cells,
-                Err(err) => return Err(err.context("Error parsing configuration file"))
-            };
-            
-			eprintln!("B");
-            // Error if line contains more than 3 cells
-            if cells.len() > 3 {
-                return Err(anyhow!("Config line has {} columns instead of the required 3", cells.len()));
-            }
-
-			if cells.len() < 3 {
-			}
-
-//	FFF	comment or repo line, error
-//	FF_	comment or repo line
-//	F_F	comment or repo line (implicit remote)
-//	F__	comment or repo line (implicit remote+media)
-//	_FF	config line
-//	_F_	config line (empty value)
-//	__F	error
-//	___	empty line
-			eprintln!("E");
-            // We need at least 3 cells for key and value
-            if cells.len() == 3 {
-                // Move both values out of the vector first
-                let key = std::mem::replace(&mut cells[1], String::new());
-                let value = std::mem::replace(&mut cells[2], String::new());
-                
-                // Now that we own key, we can get a reference to it
-                let key_ref = key.as_str();
-                
-                self.set_from_string(key_ref, value);
-            }
-
-			eprintln!("C");
-            // Error if the first cell is not empty (not a config line)
-            if !cells[0].is_empty() {
-                return Err(anyhow!("Repository specification found in config file: {:?}", cells));
-            }
-
-			eprintln!("D");
-            // Only need to check that key (cells[1]) is not empty
-            // cells[2] can be empty (which means the config value should be emptied)
-            if cells[1].is_empty() {
-                return Err(anyhow!("Config line has empty key or value: {:?}", cells));
-            }
+			match line_result
+			{
+				ListfileLine::Config{key, value} =>
+				{
+					// Now that we own key, we can get a reference to it
+	                let key_ref = key.as_str();
+					
+					self.set_from_string(key_ref, value);
+				},
+				ListfileLine::RepoSpec {local, remote, config} => {panic!();},
+				ListfileLine::Malformed => {panic!();},
+				_ => {},
+			};
         }
         
         Ok(())
