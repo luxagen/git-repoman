@@ -183,7 +183,7 @@ else
 fi
 "##);
 
-    let status = invoke::run_with_stdin_inherited(".", "ssh", &[ssh_host, "bash -s"], script.as_bytes())
+    let status = invoke::run_with_stdin_inherited(".", &["ssh", ssh_host, "bash -s"], script.as_bytes())
         .with_context(|| "Failed to spawn SSH command for repository creation")?;
 
 	match status {
@@ -230,7 +230,7 @@ pub fn execute_config_cmd(repo: &FullRepoSpec, config: &Config) -> Result<()> {
 
 	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
 	// process is MinGW or Cygwin; we must rely on `sh` being on the path
-	let status = invoke::run_in_dir_status(&repo.local_path, "sh", &["-c", inner_cmd.as_str()])
+	let status = invoke::run_in_dir_status(&repo.local_path, &["sh", "-c", inner_cmd.as_str()])
 		.with_context(|| format!("Failed to execute CONFIG_CMD: {}", inner_cmd))?;
 	if status != 0 {
 		return Err(anyhow!("Config command failed with exit code: {}", status));
