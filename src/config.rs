@@ -25,18 +25,18 @@ macro_rules! annotated_struct {
         }
 
         impl $name {
-            pub const ANNOTATIONS: &'static [(&'static str, &'static str)] = &[
-                $( (stringify!($field), $ann) ),*
-            ];
-
-            pub fn populate_from_map(mut self, mut map: HashMap<&'static str, String>) -> Self {
-                $(
-                    if let Some(value) = map.remove($ann) {
-                        self.$field = value.parse::<$ty>().unwrap_or_default();
-                    }
-                )*
-                self
-            }
+//            pub const ANNOTATIONS: &'static [(&'static str, &'static str)] = &[
+//                $( (stringify!($field), $ann) ),*
+//            ];
+//
+//            pub fn populate_from_map(mut self, mut map: HashMap<&'static str, String>) -> Self {
+//                $(
+//                    if let Some(value) = map.remove($ann) {
+//                        self.$field = value.parse::<$ty>().unwrap_or_default();
+//                    }
+//                )*
+//                self
+//            }
 
             pub fn set_by_key(&mut self, key: &str, value: String) {
                 match key {
@@ -178,7 +178,7 @@ impl Config {
 			match line_result
 			{
 				ParsedLine::Config{key, value} => self.set_by_key(key.as_str(), value),
-				ParsedLine::RepoSpec {local, remote, param} => {panic!();}, // TODO proper error
+				ParsedLine::RepoSpec {..} => {panic!();}, // TODO proper error
 				ParsedLine::Malformed => {panic!();}, // TODO proper error
 				_ => {},
 			};

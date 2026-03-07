@@ -180,7 +180,7 @@ fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
     // Process each parsed line
     for line_result in iter {
         // Handle parsing errors
-        let cells = match line_result
+        match line_result
 		{
 			ParsedLine::Config{key, value} => config.set_by_key(&key, value),
 			ParsedLine::RepoSpec{local, remote, param} => process_repo_line(config, &local, &remote, &param)?,

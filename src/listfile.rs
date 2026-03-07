@@ -10,6 +10,7 @@ pub enum ParsedLine
 {
 	Empty,
 	Whitespace,
+	#[allow(dead_code)]
 	Comment  {content: String},
 	Config   {key: String, value: String},
 	RepoSpec {local: String, remote: String, param: String},
@@ -217,19 +218,6 @@ fn parse_config_line(input: &str) -> (ParsedLine, &str) {
 		},
 		remainder,
 	)
-}
-
-fn parse_config_line_cells(input: &str) -> Result<(Vec<String>, &str)> {
-	let (line, remainder) = parse_config_line(input);
-	let cells = match line {
-		ParsedLine::Empty => Vec::new(),
-		ParsedLine::Whitespace => vec![String::new()],
-		ParsedLine::Comment{content} => vec![format!("#{}", content)],
-		ParsedLine::Config{key, value} => vec![String::new(), key, value],
-		ParsedLine::RepoSpec{local, remote, param} => vec![local, remote, param],
-		ParsedLine::Malformed => Vec::new(),
-	};
-	Ok((cells, remainder))
 }
 
 /// Parse a single cell from a configuration or repository file line.
