@@ -7,35 +7,82 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
-/// Typed configuration values with proper types for each setting
-#[derive(Debug, Clone)]
-pub struct Config {
-    /// Configuration filename (.grm.conf by default)
-    pub config_filename: String,
-    /// List filename
-    pub list_filename: String,
-    /// Whether recursion is enabled (1 by default)
-    pub recurse_enabled: bool,
-    /// Remote login information (e.g., ssh://user@host)
-    pub rlogin: String,
-    /// Remote path base directory
-    pub rpath_base: String,
-    /// Remote path template for new repositories
-    pub rpath_template: String,
-    /// Local base directory for repositories
-    pub local_dir: String,
-    /// Media base directory
-    pub gm_dir: String,
-    /// Remote directory
-    pub remote_dir: String,
-    /// Git arguments when in git mode
-    pub git_args: String,
-    /// Command to execute for configuration
-    pub config_cmd: String,
-    /// Recurse prefix for path display
-    pub recurse_prefix: String,
-    /// Tree filter path for filtering repositories to current subtree
-    pub tree_filter: String,
+macro_rules! annotated_struct {
+    (
+        $(#[$attr:meta])*
+        $vis:vis struct $name:ident {
+            $(
+                $(#[$field_attr:meta])*
+                $field:ident : $ty:ty => $ann:expr
+            ),* $(,)?
+        }
+    ) => {
+        $(#[$attr])*
+        $vis struct $name {
+            $( $(#[$field_attr])* pub $field: $ty ),*
+        }
+
+        impl $name {
+            pub const ANNOTATIONS: &'static [(&'static str, &'static str)] = &[
+                $( (stringify!($field), $ann) ),*
+            ];
+        }
+    };
+}
+
+annotated_struct! {
+    struct MyStruct {
+        user_id: i32   => "db:user_id",
+        email:  String => "db:email",
+    }
+}
+
+// "CONFIG_FILENAME" => self.config_filename = value,
+// "LIST_FN" => self.list_filename = value,
+// "OPT_RECURSE" => self.recurse_enabled = !value.is_empty(),
+// "RLOGIN" => self.rlogin = value,
+// "RPATH_BASE" => self.rpath_base = value,
+// "RPATH_TEMPLATE" => self.rpath_template = value,
+// "LOCAL_DIR" => self.local_dir = value,
+// "GM_DIR" => self.gm_dir = value,
+// "REMOTE_DIR" => self.remote_dir = value,
+// "GIT_ARGS" => self.git_args = value,
+// "CONFIG_CMD" => self.config_cmd = value,
+// "RECURSE_PREFIX" => self.recurse_prefix = value,
+// "TREE_FILTER" => self.tree_filter = value,
+
+// Typed configuration values with proper types for each setting
+annotated_struct!
+{
+    #[derive(Debug, Clone)]
+    pub struct Config {
+        /// Configuration filename (.grm.conf by default)
+        config_filename: String => "CONFIG_FILENAME",
+        /// List filename
+        list_filename: String => "LIST_FN",
+        /// Whether recursion is enabled (1 by default)
+        recurse_enabled: bool => "OPT_RECURSE",
+        /// Remote login information (e.g., ssh://user@host)
+        rlogin: String => "RLOGIN",
+        /// Remote path base directory
+        rpath_base: String => "RPATH_BASE",
+        /// Remote path template for new repositories
+        rpath_template: String => "RPATH_TEMPLATE",
+        /// Local base directory for repositories
+        local_dir: String => "LOCAL_DIR",
+        /// Media base directory
+        gm_dir: String => "GM_DIR",
+        /// Remote directory
+        remote_dir: String => "REMOTE_DIR",
+        /// Git arguments when in git mode
+        git_args: String => "GIT_ARGS",
+        /// Command to execute for configuration
+        config_cmd: String => "CONFIG_CMD",
+        /// Recurse prefix for path display
+        recurse_prefix: String => "RECURSE_PREFIX",
+        /// Tree filter path for filtering repositories to current subtree
+        tree_filter: String => "TREE_FILTER",
+    }
 }
 
 impl Config {
