@@ -42,6 +42,7 @@ struct Args {
     args: Vec<String>,
 }
 
+
 /// Find the nearest configuration file by walking up directories
 fn find_conf_file(config: &Config) -> Result<PathBuf> {
     let mut current_dir = env::current_dir()?;
@@ -214,20 +215,20 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, cfg_param: &str
 		config.remote_dir);
 
     // Extract raw path components from cells
-    let (remote, local, cfg_param) = extract_repo_paths([remote, local, cfg_param]);
-	eprintln!("!P1 R:_{}_ L:_{}_ P:_{}_", remote, local, cfg_param);
-    let (remote, local, cfg_param) = qualify_repo_paths(&config, &remote, &local, &cfg_param);
-	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", remote, local, cfg_param);
+	let spec = RepoSpec::from_cells([remote, local, cfg_param]);
+	eprintln!("!P1 R:_{}_ L:_{}_ P:_{}_", spec.remote_rel, spec.local_rel, spec.cfg_param);
+    let paths = RepoPaths::from_spec(spec, &config);
+	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", paths.remote, paths.local, paths.config);
 
-    let remote_url = get_remote_url(&config, &remote);
+    let remote_url = get_remote_url(&config, &paths.remote);
     let rt = FullRepoSpec::new(
-        &remote,
-        &local,
-        &cfg_param,
+        &paths.remote,
+        &paths.local,
+        &paths.config,
         &remote_url,
     );
     
-	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ U:_{}_", remote, local, cfg_param, rt.remote_url);
+	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ U:_{}_", paths.remote, paths.local, paths.config, rt.remote_url);
 
     // Filter out repositories that are not in or below the current directory
     if !passes_tree_filter(&config.tree_filter, &rt.local_path) {
@@ -292,46 +293,61 @@ struct RepoSpec
     cfg_param: String,
 }
 
-/// Extract raw repository path components from config file cells
-fn extract_repo_paths(cells: [&str; 3]) -> RepoSpec {
-    // First cell is always the remote relative path
-    let remote_rel = cells[0];
-    
-    // Second cell is local relative path, defaults to repo_name if empty or missing
-    let local_rel = if cells.len() > 1 && !cells[1].is_empty() {
-        cells[1].to_string()
-    } else {
-        // Extract repo name from remote path for default values
-        let re = Regex::new(r"([^/]+?)(?:\.git)?$").unwrap();
-        match re.captures(&remote_rel) {
-            Some(caps) => caps.get(1).map_or(String::new(), |m| m.as_str().to_string()),
-            None => String::new(),
-        }
-    };
-    
-    // Third cell is media relative path, defaults to local_rel if empty or missing
-    let media_rel = if cells.len() > 2 && !cells[2].is_empty() {
-        cells[2].to_string()
-    } else {
-        local_rel.clone()
-    };
-    
-    RepoSpec {
-        remote_rel: remote_rel.to_string(),
-        local_rel,
-        cfg_param: media_rel,
-    }
+impl RepoSpec
+{
+	/// Extract raw repository path components from config file cells
+	fn from_cells(cells: [&str; 3]) -> Self
+	{
+		// First cell is always the remote relative path
+		let remote_rel = cells[0];
+		
+		// Second cell is local relative path, defaults to repo_name if empty or missing
+		let local_rel = if cells.len() > 1 && !cells[1].is_empty() {
+			cells[1].to_string()
+		} else {
+			// Extract repo name from remote path for default values
+			let re = Regex::new(r"([^/]+?)(?:\.git)?$").unwrap();
+			match re.captures(&remote_rel) {
+				Some(caps) => caps.get(1).map_or(String::new(), |m| m.as_str().to_string()),
+				None => String::new(),
+			}
+		};
+		
+		// Third cell is media relative path, defaults to local_rel if empty or missing
+		let media_rel = if cells.len() > 2 && !cells[2].is_empty() {
+			cells[2].to_string()
+		} else {
+			local_rel.clone()
+		};
+		
+		Self {
+			remote_rel: remote_rel.to_string(),
+			local_rel,
+			cfg_param: media_rel,
+		}
+	}
 }
 
-/// Qualify repository paths based on configuration
-fn qualify_repo_paths(config: &Config, remote: &str, local: &str, media: &str) -> (String, String, String) {
-    (
-        cat_paths( // TODO do this in one go?
-            &config.rpath_base,
-            &cat_paths(&config.remote_dir, remote)),
-        cat_paths(&config.local_dir, &local),
-        cat_paths(&config.gm_dir, &media),
-    )
+struct RepoPaths
+{
+    remote: String,
+    local: String,
+    config: String,
+}
+
+impl RepoPaths
+{
+	fn from_spec(spec: RepoSpec,config: &Config) -> Self
+	{
+		Self
+        {
+            remote: cat_paths( // TODO do this in one go?
+                &config.rpath_base,
+                &cat_paths(&config.remote_dir, &spec.remote_rel)),
+            local: cat_paths(&config.local_dir, &spec.local_rel),
+            config: cat_paths(&config.gm_dir, &spec.cfg_param),
+        }
+	}
 }
 
 /// Get formatted remote URL based on configuration and remote relative path
