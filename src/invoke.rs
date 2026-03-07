@@ -2,23 +2,24 @@
 // Copyright © luxagen, 2025-present
 
 use std::io::Write;
-use std::process::{Command, Stdio};
+use std::process::{Command, Output, Stdio};
 use anyhow::{Context, Result, anyhow};
 
 pub struct CapturedOutput {
 	pub exit_code: i32,
 	pub stdout: Vec<u8>,
+    #[allow(dead_code)]
 	pub stderr: Vec<u8>,
 }
 
 /// Run a command in a specific directory
-pub fn run_in_dir(dir: &str, args: &[&str]) -> Result<i32> {
-    if args.is_empty() {
+pub fn run_in_dir(dir: &str, cmd: &[&str]) -> Result<i32> {
+    if cmd.is_empty() {
         return Err(anyhow!("No command specified"));
     }
     
-    let program = args[0];
-    let arguments = &args[1..];
+    let program = cmd[0];
+    let arguments = &cmd[1..];
     
     let output = Command::new(program)
         .args(arguments)
@@ -27,13 +28,13 @@ pub fn run_in_dir(dir: &str, args: &[&str]) -> Result<i32> {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .output()
-        .with_context(|| format!("Failed to execute command in {}: {:?}", dir, args))?;
+        .with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
     
     let exit_code = output.status.code().unwrap_or(-1);
     
     // Only report non-zero exit codes
     if !output.status.success() {
-        eprintln!("Command {:?} in {} exited with code: {}", args, dir, exit_code);
+        eprintln!("Command {:?} in {} exited with code: {}", cmd, dir, exit_code);
     }
     
     Ok(exit_code)
@@ -74,22 +75,27 @@ pub fn run_with_stdin_inherited(dir: &str, program: &str, args: &[&str], stdin_b
 	Ok(status.code().unwrap_or(-1))
 }
 
-pub fn run_in_dir_capture(dir: &str, args: &[&str]) -> Result<CapturedOutput> {
-	if args.is_empty() {
+fn run_command_output(dir: &str, program: &str, arguments: &[&str], stdin: Stdio, stdout: Stdio, stderr: Stdio) -> Result<Output> {
+	Command::new(program)
+		.args(arguments)
+		.current_dir(dir)
+		.stdin(stdin)
+		.stdout(stdout)
+		.stderr(stderr)
+		.output()
+		.map_err(|err| err.into())
+}
+
+pub fn run_in_dir_capture(dir: &str, cmd: &[&str]) -> Result<CapturedOutput> {
+	if cmd.is_empty() {
 		return Err(anyhow!("No command specified"));
 	}
 
-	let program = args[0];
-	let arguments = &args[1..];
+	let program = cmd[0];
+	let arguments = &cmd[1..];
 
-	let output = Command::new(program)
-		.args(arguments)
-		.current_dir(dir)
-		.stdin(Stdio::null())
-		.stdout(Stdio::piped())
-		.stderr(Stdio::piped())
-		.output()
-		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, args))?;
+	let output = run_command_output(dir, program, arguments, Stdio::null(), Stdio::piped(), Stdio::piped())
+		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
 
 	let exit_code = output.status.code().unwrap_or(-1);
 	Ok(CapturedOutput {
@@ -107,24 +113,17 @@ pub fn run_git_capture(local_path: &str, args: &[&str]) -> Result<CapturedOutput
 
 /// Run a command in a specific directory, capturing output but not displaying it
 /// Returns the exit code
-pub fn run_command_silent(dir: &str, args: &[&str]) -> Result<i32> {
+pub fn run_command_silent(dir: &str, cmd: &[&str]) -> Result<i32> {
     // Early validation
-    if args.is_empty() {
+    if cmd.is_empty() {
         return Err(anyhow!("No command specified"));
     }
     
-    let program = args[0];
-    let arguments = &args[1..];
+    let program = cmd[0];
+    let arguments = &cmd[1..];
     
-    // Build and execute the command
-    let output = Command::new(program)
-        .args(arguments)
-        .current_dir(dir)
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .output()
-        .with_context(|| format!("Failed to execute command: {:?}", args))?;
+    let output = run_command_output(dir, program, arguments, Stdio::null(), Stdio::null(), Stdio::null())
+        .with_context(|| format!("Failed to execute command: {:?}", cmd))?;
     
     // Get exit code, which is None if process was terminated by a signal
     let exit_code = output.status.code().unwrap_or(-1);
