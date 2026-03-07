@@ -114,6 +114,51 @@ mod tests {
 	}
 
 	#[test]
+	fn repo_line_defaults_all_fields_one_cell() {
+		let input = "foo\n";
+		let (line, remainder) = parse_config_line(input);
+		match line {
+			ParsedLine::RepoSpec{remote, local, param} => {
+				assert_eq!(remote, "foo");
+				assert_eq!(local, "foo");
+				assert_eq!(param, "foo");
+			}
+			_ => panic!("expected repospec"),
+		}
+		assert_eq!(remainder, "");
+	}
+
+	#[test]
+	fn repo_line_defaults_param_two_cells() {
+		let input = "foo*bar\n";
+		let (line, remainder) = parse_config_line(input);
+		match line {
+			ParsedLine::RepoSpec{remote, local, param} => {
+				assert_eq!(remote, "foo");
+				assert_eq!(local, "bar");
+				assert_eq!(param, "bar");
+			}
+			_ => panic!("expected repospec"),
+		}
+		assert_eq!(remainder, "");
+	}
+
+	#[test]
+	fn repo_line_no_defaults_three_cells() {
+		let input = "foo*bar*baz\n";
+		let (line, remainder) = parse_config_line(input);
+		match line {
+			ParsedLine::RepoSpec{remote, local, param} => {
+				assert_eq!(remote, "foo");
+				assert_eq!(local, "bar");
+				assert_eq!(param, "baz");
+			}
+			_ => panic!("expected repospec"),
+		}
+		assert_eq!(remainder, "");
+	}
+
+	#[test]
 	fn parse_trailing_backslash_errors() {
 		let err = parse_config_cell("abc\\").unwrap_err();
 		assert!(format!("{}", err).contains("Trailing backslash"));
@@ -212,9 +257,9 @@ fn parse_config_line(input: &str) -> (ParsedLine, &str) {
 	(
 		ParsedLine::RepoSpec
 		{
-			local: cells[0].clone(),
-			remote: cells.get(1).cloned().unwrap_or_default(),
-			param: cells.get(2).cloned().unwrap_or_default(),
+			remote: cells[0].clone(),
+			local: cells.get(1).cloned().unwrap_or_else(|| cells[0].clone()),
+			param: cells.get(2).cloned().unwrap_or_else(|| cells.get(1).cloned().unwrap_or_else(|| cells[0].clone())),
 		},
 		remainder,
 	)
