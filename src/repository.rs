@@ -4,6 +4,7 @@
 use std::borrow::Cow;
 use std::io::Write;
 use std::path::Path;
+use std::process::Command;
 use anyhow::{Context, Result, anyhow};
 use crate::config::{Config,RepoSpec};
 use crate::invoke;
@@ -14,20 +15,17 @@ pub use crate::config::FullRepoSpec;
 pub fn is_dir_repo_root(local_path: &str) -> Result<bool> {
     // Use git rev-parse --git-dir which is more efficient for checking repository existence
     // This is a plumbing command that directly checks for the .git directory
-    let output = Command::new("git")
-        .args(["rev-parse", "--git-dir"])
-        .current_dir(local_path)
-        .output()
-        .with_context(|| format!("Failed to check if {} is a git repo root", local_path))?;
+	let output = invoke::run_git_capture(local_path, &["rev-parse", "--git-dir"])
+		.with_context(|| format!("Failed to check if {} is a git repo root", local_path))?;
     
     // If command succeeds, it's a git repository
-    if !output.status.success() {
+	if output.exit_code != 0 {
         return Ok(false);
     }
     
     // Check if we're at the root (.git dir is directly in this directory)
     // If output is just ".git", we're at the repository root
-    let git_dir = String::from_utf8_lossy(&output.stdout).trim().to_string();
+	let git_dir = String::from_utf8_lossy(&output.stdout).trim().to_string();
     Ok(git_dir == ".git")
 }
 
