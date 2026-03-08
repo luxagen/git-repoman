@@ -72,7 +72,6 @@ pub struct RepoPaths
     pub config: String,
 }
 
-#[derive(Debug)]
 pub struct FullRepoSpec {
     pub remote_path: String,
     pub remote_url: String,
