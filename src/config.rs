@@ -317,14 +317,14 @@ fn cat_paths(base: &str, rel: &str) -> String {
 fn build_remote_url(rlogin: &str, repo_path: &str) -> String {
     if rlogin.is_empty() {
         // Local path - just join
-        return repo_path.trim_start_matches('/').to_string();
+        return repo_path.to_string();
     }
 
     let login = rlogin.trim_end_matches('/');
 
     if !login.contains("://")
     {
-		return format!("{}:{}", login, repo_path.trim_start_matches('/'))
+		return format!("{}:{}",login,repo_path)
     }
 
     // Protocol-based URL (http://, https://, ssh://, etc)
@@ -352,33 +352,39 @@ mod tests {
 
     #[test]
     fn test_build_remote_url_with_login() {
-        let result = build_remote_url(
-            "user@github.com",
-            "organization",
-            "repository.git"
-        );
-        assert_eq!(result, "user@github.com:organization/repository.git");
+        let result = build_remote_url("user@github.com","organization/repository.git");
+        assert_eq!(result,"user@github.com:organization/repository.git");
     }
 
     #[test]
     fn test_build_remote_url_without_login() {
-        let result = build_remote_url(
-            "",
-            "organization",
-            "repository.git"
-        );
-        assert_eq!(result, "organization/repository.git");
+        let result = build_remote_url("","organization/repository.git");
+        assert_eq!(result,"organization/repository.git");
     }
 
     #[test]
     fn test_build_remote_url_with_protocol() {
-        let result = build_remote_url(
-            "https://github.com",
-            "organization",
-            "repository.git"
-        );
-        assert_eq!(result, "https://github.com/organization/repository.git");
+        let result = build_remote_url("https://github.com","organization/repository.git");
+        assert_eq!(result,"https://github.com/organization/repository.git");
     }
+
+	#[test]
+	fn test_build_remote_url_with_scp_absolute_path() {
+		let result = build_remote_url("git@server","/srv/git/repo.git");
+		assert_eq!(result,"git@server:/srv/git/repo.git");
+	}
+
+	#[test]
+	fn test_build_remote_url_with_protocol_leading_slash_is_normalized() {
+		let result = build_remote_url("https://github.com","/organization/repository.git");
+		assert_eq!(result,"https://github.com/organization/repository.git");
+	}
+
+	#[test]
+	fn test_build_remote_url_local_absolute_path_is_preserved() {
+		let result = build_remote_url("","/tmp/repo.git");
+		assert_eq!(result,"/tmp/repo.git");
+	}
 
 	#[test]
 	fn all_values_does_not_quote_strings() {
