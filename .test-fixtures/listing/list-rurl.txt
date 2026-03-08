@@ -1,0 +1,255 @@
+ssh://git@git-example.com/git/webcore/Fable Gilded Harbor
+ssh://git@git-example.com/git/webcore/Fable Ember Hearth
+ssh://git@git-example.com/git/webcore/Fable Verdant Lantern
+ssh://git@git-example.com/git/webcore/Amber Vale/Fable Pale Citadel
+ssh://git@git-example.com/git/webcore/Amber Vale/Fable Keen Crescent
+ssh://git@git-example.com/git/webcore/Amber Vale/Fable Brisk Canopy
+ssh://git@git-example.com/git/webcore/Amber Vale/Fable Gilded Citadel
+ssh://git@git-example.com/git/webcore/Juniper Works/Fable Keen Sanctum
+ssh://git@git-example.com/git/webcore/Juniper Works/Fable Obsidian Cavern
+ssh://git@git-example.com/git/webcore/Juniper Works/Fable Juniper Junction
+ssh://git@git-example.com/git/webcore/Juniper Works/Fable Faint Crescent
+ssh://git@git-example.com/git/webcore/Juniper Works/Fable Gilded Lantern
+ssh://git@git-example.com/git/webcore/Juniper Works/Fable Gilded Canopy
+ssh://git@git-example.com/git/webcore/Juniper Works/Fable Misted Workshop
+ssh://git@git-example.com/git/webcore/Kestrel Gate/Fable Rust Ridge
+ssh://git@git-example.com/git/webcore/Night Kite/Fable Faint Lantern
+ssh://git@git-example.com/git/webcore/Night Kite/Fable Rust Workshop
+ssh://git@git-example.com/git/webcore/Night Kite/Fable Keen Quarry
+ssh://git@git-example.com/git/webcore/Night Kite/Fable Ash Workshop
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Circuit Foundry/Fable Sable Workshop
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Circuit Foundry/Fable Gilded Outpost
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Circuit Foundry/Fable Juniper Bridge
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Hollow Harbor
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Gilded Outpost
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Gilded Sanctum
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Quiet Junction
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Ember Hearth
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Quiet Beacon
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Rust Canopy
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Hollow Harbor
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Hollow Crescent
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Obsidian Anchor
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Pocket Atlas/Fable Iron Market
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Dawn Market
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Verdant Canopy
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Hollow Harbor
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Pale Market
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Quiet Borough
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Brisk Anchor
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Rust Hearth
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Rust Citadel
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Verdant Harbor
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Gilded Quarry
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Aster/Fable Juniper Isle
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Pale Quarry
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Verdant Borough
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Iron Borough
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Luminous Outpost
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Obsidian Outpost
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Ash Lantern
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Juniper Beacon
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Nimble Workshop
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Faint Bridge
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Obsidian Isle
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Verdant Market
+ssh://git@git-example.com/git/webcore/Obsidian Hub/Vault Brine/Fable Luminous Canopy
+ssh://git@git-example.com/git/webcore/Quasar/Fable Nimble Isle
+ssh://git@git-example.com/git/webcore/Quasar/Fable Quiet Harbor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Hollow Crescent
+ssh://git@git-example.com/git/webcore/Quasar/Fable Luminous Citadel
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ember Hearth
+ssh://git@git-example.com/git/webcore/Quasar/Fable Iron Isle
+ssh://git@git-example.com/git/webcore/Quasar/Fable Iron Crescent
+ssh://git@git-example.com/git/webcore/Quasar/Fable Pale Workshop
+ssh://git@git-example.com/git/webcore/Quasar/Fable Sable Beacon
+ssh://git@git-example.com/git/webcore/Quasar/Fable Misted Cavern
+ssh://git@git-example.com/git/webcore/Quasar/Fable Gilded Beacon
+ssh://git@git-example.com/git/webcore/Quasar/Fable Iron Isle
+ssh://git@git-example.com/git/webcore/Quasar/Fable Cobalt Junction
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ember Canopy
+ssh://git@git-example.com/git/webcore/Quasar/Fable Sable Canopy
+ssh://git@git-example.com/git/webcore/Quasar/Fable Rust Sanctum
+ssh://git@git-example.com/git/webcore/Quasar/Fable Brisk Crescent
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ash Harbor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Faint Cavern
+ssh://git@git-example.com/git/webcore/Quasar/Fable Nimble Harbor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Quiet Market
+ssh://git@git-example.com/git/webcore/Quasar/Fable Brisk Quarry
+ssh://git@git-example.com/git/webcore/Quasar/Fable Hollow Anchor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Gilded Outpost
+ssh://git@git-example.com/git/webcore/Quasar/Fable Hollow Market
+ssh://git@git-example.com/git/webcore/Quasar/Fable Obsidian Junction
+ssh://git@git-example.com/git/webcore/Quasar/Fable Iron Keep
+ssh://git@git-example.com/git/webcore/Quasar/Fable Gilded Isle
+ssh://git@git-example.com/git/webcore/Quasar/Fable Nimble Workshop
+ssh://git@git-example.com/git/webcore/Quasar/Fable Luminous Crescent
+ssh://git@git-example.com/git/webcore/Quasar/Fable Pale Bridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Quiet Sanctum
+ssh://git@git-example.com/git/webcore/Quasar/Fable Keen Hearth
+ssh://git@git-example.com/git/webcore/Quasar/Fable Brisk Lantern
+ssh://git@git-example.com/git/webcore/Quasar/Fable Sable Junction
+ssh://git@git-example.com/git/webcore/Quasar/Fable Nimble Bridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ash Quarry
+ssh://git@git-example.com/git/webcore/Quasar/Fable Luminous Sanctum
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ash Quarry
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ember Beacon
+ssh://git@git-example.com/git/webcore/Quasar/Fable Verdant Crescent
+ssh://git@git-example.com/git/webcore/Quasar/Fable Verdant Keep
+ssh://git@git-example.com/git/webcore/Quasar/Fable Nimble Hearth
+ssh://git@git-example.com/git/webcore/Quasar/Fable Keen Canopy
+ssh://git@git-example.com/git/webcore/Quasar/Fable Pale Ridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ember Workshop
+ssh://git@git-example.com/git/webcore/Quasar/Fable Nimble Anchor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Iron Lantern
+ssh://git@git-example.com/git/webcore/Quasar/Fable Luminous Workshop
+ssh://git@git-example.com/git/webcore/Quasar/Fable Luminous Crescent
+ssh://git@git-example.com/git/webcore/Quasar/Fable Hollow Outpost
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ash Beacon
+ssh://git@git-example.com/git/webcore/Quasar/Fable Brisk Isle
+ssh://git@git-example.com/git/webcore/Quasar/Fable Luminous Ridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Obsidian Outpost
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ember Harbor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Gilded Ridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ash Citadel
+ssh://git@git-example.com/git/webcore/Quasar/Fable Dawn Anchor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Juniper Canopy
+ssh://git@git-example.com/git/webcore/Quasar/Fable Iron Sanctum
+ssh://git@git-example.com/git/webcore/Quasar/Fable Iron Ridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Nimble Keep
+ssh://git@git-example.com/git/webcore/Quasar/Fable Gilded Sanctum
+ssh://git@git-example.com/git/webcore/Quasar/Fable Sable Market
+ssh://git@git-example.com/git/webcore/Quasar/Fable Sable Bridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Keen Harbor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Rust Bridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Cobalt Harbor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Quiet Anchor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Pale Junction
+ssh://git@git-example.com/git/webcore/Quasar/Fable Keen Cavern
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ember Ridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Juniper Workshop
+ssh://git@git-example.com/git/webcore/Quasar/Fable Verdant Citadel
+ssh://git@git-example.com/git/webcore/Quasar/Fable Juniper Ridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Juniper Bridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Iron Cavern
+ssh://git@git-example.com/git/webcore/Quasar/Fable Keen Keep
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ash Anchor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Misted Cavern
+ssh://git@git-example.com/git/webcore/Quasar/Fable Nimble Harbor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Juniper Canopy
+ssh://git@git-example.com/git/webcore/Quasar/Fable Pale Junction
+ssh://git@git-example.com/git/webcore/Quasar/Fable Pale Anchor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Juniper Cavern
+ssh://git@git-example.com/git/webcore/Quasar/Fable Sable Canopy
+ssh://git@git-example.com/git/webcore/Quasar/Fable Verdant Junction
+ssh://git@git-example.com/git/webcore/Quasar/Fable Cobalt Crescent
+ssh://git@git-example.com/git/webcore/Quasar/Fable Cobalt Harbor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Pale Hearth
+ssh://git@git-example.com/git/webcore/Quasar/Fable Quiet Market
+ssh://git@git-example.com/git/webcore/Quasar/Fable Nimble Crescent
+ssh://git@git-example.com/git/webcore/Quasar/Fable Luminous Citadel
+ssh://git@git-example.com/git/webcore/Quasar/Fable Sable Borough
+ssh://git@git-example.com/git/webcore/Quasar/Fable Juniper Cavern
+ssh://git@git-example.com/git/webcore/Quasar/Fable Nimble Harbor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ash Borough
+ssh://git@git-example.com/git/webcore/Quasar/Fable Gilded Sanctum
+ssh://git@git-example.com/git/webcore/Quasar/Fable Keen Quarry
+ssh://git@git-example.com/git/webcore/Quasar/Fable Quiet Harbor
+ssh://git@git-example.com/git/webcore/Quasar/Fable Verdant Sanctum
+ssh://git@git-example.com/git/webcore/Quasar/Fable Rust Crescent
+ssh://git@git-example.com/git/webcore/Quasar/Fable Sable Junction
+ssh://git@git-example.com/git/webcore/Quasar/Fable Rust Quarry
+ssh://git@git-example.com/git/webcore/Quasar/Fable Faint Citadel
+ssh://git@git-example.com/git/webcore/Quasar/Fable Obsidian Outpost
+ssh://git@git-example.com/git/webcore/Quasar/Fable Quiet Borough
+ssh://git@git-example.com/git/webcore/Quasar/Fable Juniper Market
+ssh://git@git-example.com/git/webcore/Quasar/Fable Luminous Workshop
+ssh://git@git-example.com/git/webcore/Quasar/Fable Pale Workshop
+ssh://git@git-example.com/git/webcore/Quasar/Fable Dawn Bridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Luminous Quarry
+ssh://git@git-example.com/git/webcore/Quasar/Fable Verdant Ridge
+ssh://git@git-example.com/git/webcore/Quasar/Fable Luminous Sanctum
+ssh://git@git-example.com/git/webcore/Quasar/Fable Ember Isle
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Ash Hearth
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Hollow Sanctum
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Gilded Anchor
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Faint Citadel
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Quiet Quarry
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Hollow Hearth
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Luminous Borough
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Iron Keep
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Hollow Isle
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Keen Quarry
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Obsidian Bridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Keen Beacon
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Luminous Bridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Hollow Crescent
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Ash Workshop
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Ash Isle
+ssh://git@git-example.com/git/webcore/Rivermouth/Fable Hollow Ridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Gilded Borough
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Verdant Bridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Keen Market
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Hearth
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Keen Sanctum
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Luminous Outpost
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Ash Beacon
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Misted Borough
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Faint Crescent
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Luminous Citadel
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Ember Borough
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Hollow Borough
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Gilded Outpost
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Luminous Ridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Pale Workshop
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Ember Ridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Sable Bridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Iron Outpost
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Hollow Junction
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Ash Workshop
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Juniper Workshop
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Sable Outpost
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Dawn Borough
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Quiet Market
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Sable Lantern
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Beacon
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Sanctum
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Juniper Anchor
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Pale Ridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Faint Borough
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Pale Junction
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Pale Beacon
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Dawn Market
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Misted Bridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Gilded Keep
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Iron Hearth
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Dawn Cavern
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Keen Bridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Ash Junction
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Ember Canopy
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Luminous Outpost
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Luminous Market
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Misted Junction
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Hollow Isle
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Rust Sanctum
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Sable Market
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Quarry
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Obsidian Quarry
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Nimble Ridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Verdant Outpost
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Sanctum
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Verdant Crescent
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Sable Bridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Misted Keep
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Rust Workshop
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Obsidian Bridge
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Sable Crescent
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Sable Quarry
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Ash Canopy
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Quiet Canopy
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Pale Borough
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Hollow Citadel
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Junction
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Verdant Borough
+ssh://git@git-example.com/git/webcore/Rivermouth/Archive Wing/Fable Verdant Junction
+ssh://git@git-example.com/git/webcore/Sunken Dock/Fable Rust Junction
