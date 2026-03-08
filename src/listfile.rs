@@ -104,9 +104,9 @@ mod tests {
 		let (line, remainder) = parse_config_line(input);
 		match line {
 			ParsedLine::RepoSpec{local, remote, param} => {
-				assert_eq!(local, "α*β");
-				assert_eq!(remote, "γ");
-				assert_eq!(param, "");
+				assert_eq!(remote, "α*β");
+				assert_eq!(local, "γ");
+				assert_eq!(param, "γ");
 			}
 			_ => panic!("expected repospec"),
 		}
