@@ -292,7 +292,7 @@ fn get_remote_url(config: &Config, remote_path: &str) -> String {
 		panic!("RLOGIN must exist!");
 	}
 
-	build_remote_url(&config.rlogin, "", remote_path)
+	build_remote_url(&config.rlogin, remote_path)
 }
 
 fn cat_paths(base: &str, rel: &str) -> String {
@@ -314,44 +314,36 @@ fn cat_paths(base: &str, rel: &str) -> String {
 /// * `rlogin` - Optional remote login info (e.g., "user@host" or "https://github.com")
 /// * `remote_dir` - Remote directory path
 /// * `repo_path` - Repository path
-fn build_remote_url(rlogin: &str, remote_dir: &str, repo_path: &str) -> String {
+fn build_remote_url(rlogin: &str, repo_path: &str) -> String {
     if rlogin.is_empty() {
         // Local path - just join
-        return format!("{}/{}", 
-            remote_dir.trim_end_matches('/'),
-            repo_path.trim_start_matches('/'));
+        return repo_path.trim_start_matches('/').to_string();
     }
 
     let login = rlogin.trim_end_matches('/');
-    	if login.contains("://") {
-		// Protocol-based URL (http://, https://, ssh://, etc)
-		let login_parts: Vec<&str> = login.splitn(2, "://").collect();
-		let protocol = login_parts[0];
-		let domain = login_parts[1].trim_end_matches('/');
-		let path = if remote_dir.trim_matches('/').is_empty() {
-			repo_path.trim_start_matches('/').to_string()
-		} else {
-			format!("{}/{}", remote_dir.trim_matches('/'), repo_path.trim_start_matches('/'))
-		};
-		match protocol {
-			"http" | "https" => {
-				let full_url = format!("{}://{}/{}", protocol, domain.trim_end_matches('/'), path);
-				// Try to parse and normalize with gix-url
-				if let Ok(parsed) = gix_url::parse(full_url.as_bytes().into()) {
-                    return parsed.to_string();
-                }
-                // Fall back to simple string formatting if parsing fails
-                full_url
-            },
-            			_ => format!("{}://{}/{}", protocol, domain, path)
-		}
-	} else {
-		if remote_dir.trim_matches('/').is_empty() {
-			format!("{}:{}", login, repo_path.trim_start_matches('/'))
-		} else {
-			format!("{}:{}/{}", login, remote_dir.trim_matches('/'), repo_path.trim_start_matches('/'))
-		}
-	}
+
+    if !login.contains("://")
+    {
+		return format!("{}:{}", login, repo_path.trim_start_matches('/'))
+    }
+
+    // Protocol-based URL (http://, https://, ssh://, etc)
+    let login_parts: Vec<&str> = login.splitn(2, "://").collect();
+    let protocol = login_parts[0];
+    let domain = login_parts[1].trim_end_matches('/');
+    let path = repo_path.trim_start_matches('/');
+    match protocol {
+        "http" | "https" => {
+            let full_url = format!("{}://{}/{}", protocol, domain.trim_end_matches('/'), path);
+            // Try to parse and normalize with gix-url
+            if let Ok(parsed) = gix_url::parse(full_url.as_bytes().into()) {
+                return parsed.to_string();
+            }
+            // Fall back to simple string formatting if parsing fails
+            full_url
+        },
+        _ => format!("{}://{}/{}", protocol, domain, path)
+    }
 }
 
 #[cfg(test)]
