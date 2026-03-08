@@ -311,7 +311,7 @@ fn cat_paths(base: &str, rel: &str) -> String {
 
 /// Build a Git clone/fetch URL from components
 /// 
-/// * `rlogin` - Optional remote login info (e.g., "user@host" or "https://github.com")
+/// * `rlogin` - Optional remote login info (e.g., "user@host" or "https://example.com")
 /// * `remote_dir` - Remote directory path
 /// * `repo_path` - Repository path
 fn build_remote_url(rlogin: &str, repo_path: &str) -> String {
@@ -352,8 +352,8 @@ mod tests {
 
     #[test]
     fn test_build_remote_url_with_login() {
-        let result = build_remote_url("user@github.com","organization/repository.git");
-        assert_eq!(result,"user@github.com:organization/repository.git");
+        let result = build_remote_url("user@example.com","organization/repository.git");
+        assert_eq!(result,"user@example.com:organization/repository.git");
     }
 
     #[test]
@@ -364,8 +364,8 @@ mod tests {
 
     #[test]
     fn test_build_remote_url_with_protocol() {
-        let result = build_remote_url("https://github.com","organization/repository.git");
-        assert_eq!(result,"https://github.com/organization/repository.git");
+        let result = build_remote_url("https://example.com","organization/repository.git");
+        assert_eq!(result,"https://example.com/organization/repository.git");
     }
 
 	#[test]
@@ -376,8 +376,8 @@ mod tests {
 
 	#[test]
 	fn test_build_remote_url_with_protocol_leading_slash_is_normalized() {
-		let result = build_remote_url("https://github.com","/organization/repository.git");
-		assert_eq!(result,"https://github.com/organization/repository.git");
+		let result = build_remote_url("https://example.com","/organization/repository.git");
+		assert_eq!(result,"https://example.com/organization/repository.git");
 	}
 
 	#[test]
@@ -407,27 +407,27 @@ mod tests {
 		config.gm_dir = "gm".to_string();
 		config.rpath_base = "rbase".to_string();
 		config.remote_dir = "".to_string();
-		config.recurse_prefix = "Ian/Ade/".to_string();
+		config.recurse_prefix = "Example/Prefix/".to_string();
 
 		let spec = RepoSpec {
 			remote_rel: "remote".to_string(),
-			local_rel: "Guardian_Angel".to_string(),
-			cfg_param: "Guardian_Angel".to_string(),
+			local_rel: "Example_Repo".to_string(),
+			cfg_param: "Example_Repo".to_string(),
 		};
 
 		let paths = RepoPaths::from_spec(spec, &config);
-		assert_eq!(paths.local, "local/Guardian_Angel");
-		assert_eq!(paths.config, "gm/Guardian_Angel");
+		assert_eq!(paths.local, "local/Example_Repo");
+		assert_eq!(paths.config, "gm/Example_Repo");
 	}
 
 	#[test]
 	fn remote_url_does_not_duplicate_base_segments_when_remote_dir_empty() {
 		let mut config = Config::new();
-		config.rlogin = "ssh://git@git.luxagen.net".to_string();
-		config.rpath_base = "git/music-projects".to_string();
+		config.rlogin = "ssh://git@example.com".to_string();
+		config.rpath_base = "git/projects".to_string();
 		config.remote_dir = "".to_string();
 
-		let url = get_remote_url(&config, "git/music-projects/_IDEAS");
-		assert_eq!(url, "ssh://git@git.luxagen.net/git/music-projects/_IDEAS");
+		let url = get_remote_url(&config, "git/projects/_NOTES");
+		assert_eq!(url, "ssh://git@example.com/git/projects/_NOTES");
 	}
 }
