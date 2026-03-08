@@ -112,7 +112,7 @@ fn process_repo(config: &Config, repo: &FullRepoSpec) -> Result<()> {
 
     let mut needs_checkout = false;
 
-    println!("{}", &repo.local_path.bright_white());
+    println!("{}", format!("{}{}", config.recurse_prefix, repo.local_path).bright_white());
 
     // State machine for the repository
     loop {
