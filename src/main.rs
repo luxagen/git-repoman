@@ -99,8 +99,7 @@ fn process_repo(config: &Config, repo: &FullRepoSpec) -> Result<()> {
     }
     
     if operations.list_lrel {
-		let leaf = repo.local_path.split('/').last().unwrap_or(repo.local_path.as_str());
-		println!("{}{}", config.recurse_prefix, leaf);
+		println!("{}{}", config.recurse_prefix, repo.local_path);
         return Ok(());
     }
 
