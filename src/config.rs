@@ -276,7 +276,7 @@ impl FullRepoSpec {
 }
 
 /// Get formatted remote URL based on configuration and remote relative path
-fn get_remote_url(config: &Config, remote_rel_path: &str) -> String {
+fn get_remote_url(config: &Config, remote_path: &str) -> String {
 	if config.rpath_base.is_empty()
 	{
 		panic!("RPATH_BASE must exist!");
@@ -296,7 +296,7 @@ fn get_remote_url(config: &Config, remote_rel_path: &str) -> String {
     let base_path = &config.rpath_base;
 
     // Use cat_paths to handle paths consistently
-    let full_repo_path = cat_paths(&config.remote_dir, remote_rel_path);
+    let full_repo_path = cat_paths(&config.remote_dir, remote_path);
     
     // Choose URL format based on configuration
     if !config.rlogin.is_empty() {
