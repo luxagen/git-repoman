@@ -123,6 +123,7 @@ impl Drop for CommandRunnerGuard {
 	}
 }
 
+#[allow(dead_code)]
 pub fn set_command_runner_for_test(runner: Arc<dyn CommandRunner>) -> CommandRunnerGuard {
 	let mut slot = COMMAND_RUNNER.write().expect("COMMAND_RUNNER poisoned");
 	let previous = slot.clone();
