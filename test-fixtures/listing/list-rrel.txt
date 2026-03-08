@@ -1,0 +1,255 @@
+/git/webcore/Fable Gilded Harbor
+/git/webcore/Fable Ember Hearth
+/git/webcore/Fable Verdant Lantern
+/git/webcore/Amber Vale/Fable Pale Citadel
+/git/webcore/Amber Vale/Fable Keen Crescent
+/git/webcore/Amber Vale/Fable Brisk Canopy
+/git/webcore/Amber Vale/Fable Gilded Citadel
+/git/webcore/Juniper Works/Fable Keen Sanctum
+/git/webcore/Juniper Works/Fable Obsidian Cavern
+/git/webcore/Juniper Works/Fable Juniper Junction
+/git/webcore/Juniper Works/Fable Faint Crescent
+/git/webcore/Juniper Works/Fable Gilded Lantern
+/git/webcore/Juniper Works/Fable Gilded Canopy
+/git/webcore/Juniper Works/Fable Misted Workshop
+/git/webcore/Kestrel Gate/Fable Rust Ridge
+/git/webcore/Night Kite/Fable Faint Lantern
+/git/webcore/Night Kite/Fable Rust Workshop
+/git/webcore/Night Kite/Fable Keen Quarry
+/git/webcore/Night Kite/Fable Ash Workshop
+/git/webcore/Obsidian Hub/Circuit Foundry/Fable Sable Workshop
+/git/webcore/Obsidian Hub/Circuit Foundry/Fable Gilded Outpost
+/git/webcore/Obsidian Hub/Circuit Foundry/Fable Juniper Bridge
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Hollow Harbor
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Gilded Outpost
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Gilded Sanctum
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Quiet Junction
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Ember Hearth
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Quiet Beacon
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Rust Canopy
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Hollow Harbor
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Hollow Crescent
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Obsidian Anchor
+/git/webcore/Obsidian Hub/Pocket Atlas/Fable Iron Market
+/git/webcore/Obsidian Hub/Vault Aster/Fable Dawn Market
+/git/webcore/Obsidian Hub/Vault Aster/Fable Verdant Canopy
+/git/webcore/Obsidian Hub/Vault Aster/Fable Hollow Harbor
+/git/webcore/Obsidian Hub/Vault Aster/Fable Pale Market
+/git/webcore/Obsidian Hub/Vault Aster/Fable Quiet Borough
+/git/webcore/Obsidian Hub/Vault Aster/Fable Brisk Anchor
+/git/webcore/Obsidian Hub/Vault Aster/Fable Rust Hearth
+/git/webcore/Obsidian Hub/Vault Aster/Fable Rust Citadel
+/git/webcore/Obsidian Hub/Vault Aster/Fable Verdant Harbor
+/git/webcore/Obsidian Hub/Vault Aster/Fable Gilded Quarry
+/git/webcore/Obsidian Hub/Vault Aster/Fable Juniper Isle
+/git/webcore/Obsidian Hub/Vault Brine/Fable Pale Quarry
+/git/webcore/Obsidian Hub/Vault Brine/Fable Verdant Borough
+/git/webcore/Obsidian Hub/Vault Brine/Fable Iron Borough
+/git/webcore/Obsidian Hub/Vault Brine/Fable Luminous Outpost
+/git/webcore/Obsidian Hub/Vault Brine/Fable Obsidian Outpost
+/git/webcore/Obsidian Hub/Vault Brine/Fable Ash Lantern
+/git/webcore/Obsidian Hub/Vault Brine/Fable Juniper Beacon
+/git/webcore/Obsidian Hub/Vault Brine/Fable Nimble Workshop
+/git/webcore/Obsidian Hub/Vault Brine/Fable Faint Bridge
+/git/webcore/Obsidian Hub/Vault Brine/Fable Obsidian Isle
+/git/webcore/Obsidian Hub/Vault Brine/Fable Verdant Market
+/git/webcore/Obsidian Hub/Vault Brine/Fable Luminous Canopy
+/git/webcore/Quasar/Fable Nimble Isle
+/git/webcore/Quasar/Fable Quiet Harbor
+/git/webcore/Quasar/Fable Hollow Crescent
+/git/webcore/Quasar/Fable Luminous Citadel
+/git/webcore/Quasar/Fable Ember Hearth
+/git/webcore/Quasar/Fable Iron Isle
+/git/webcore/Quasar/Fable Iron Crescent
+/git/webcore/Quasar/Fable Pale Workshop
+/git/webcore/Quasar/Fable Sable Beacon
+/git/webcore/Quasar/Fable Misted Cavern
+/git/webcore/Quasar/Fable Gilded Beacon
+/git/webcore/Quasar/Fable Iron Isle
+/git/webcore/Quasar/Fable Cobalt Junction
+/git/webcore/Quasar/Fable Ember Canopy
+/git/webcore/Quasar/Fable Sable Canopy
+/git/webcore/Quasar/Fable Rust Sanctum
+/git/webcore/Quasar/Fable Brisk Crescent
+/git/webcore/Quasar/Fable Ash Harbor
+/git/webcore/Quasar/Fable Faint Cavern
+/git/webcore/Quasar/Fable Nimble Harbor
+/git/webcore/Quasar/Fable Quiet Market
+/git/webcore/Quasar/Fable Brisk Quarry
+/git/webcore/Quasar/Fable Hollow Anchor
+/git/webcore/Quasar/Fable Gilded Outpost
+/git/webcore/Quasar/Fable Hollow Market
+/git/webcore/Quasar/Fable Obsidian Junction
+/git/webcore/Quasar/Fable Iron Keep
+/git/webcore/Quasar/Fable Gilded Isle
+/git/webcore/Quasar/Fable Nimble Workshop
+/git/webcore/Quasar/Fable Luminous Crescent
+/git/webcore/Quasar/Fable Pale Bridge
+/git/webcore/Quasar/Fable Quiet Sanctum
+/git/webcore/Quasar/Fable Keen Hearth
+/git/webcore/Quasar/Fable Brisk Lantern
+/git/webcore/Quasar/Fable Sable Junction
+/git/webcore/Quasar/Fable Nimble Bridge
+/git/webcore/Quasar/Fable Ash Quarry
+/git/webcore/Quasar/Fable Luminous Sanctum
+/git/webcore/Quasar/Fable Ash Quarry
+/git/webcore/Quasar/Fable Ember Beacon
+/git/webcore/Quasar/Fable Verdant Crescent
+/git/webcore/Quasar/Fable Verdant Keep
+/git/webcore/Quasar/Fable Nimble Hearth
+/git/webcore/Quasar/Fable Keen Canopy
+/git/webcore/Quasar/Fable Pale Ridge
+/git/webcore/Quasar/Fable Ember Workshop
+/git/webcore/Quasar/Fable Nimble Anchor
+/git/webcore/Quasar/Fable Iron Lantern
+/git/webcore/Quasar/Fable Luminous Workshop
+/git/webcore/Quasar/Fable Luminous Crescent
+/git/webcore/Quasar/Fable Hollow Outpost
+/git/webcore/Quasar/Fable Ash Beacon
+/git/webcore/Quasar/Fable Brisk Isle
+/git/webcore/Quasar/Fable Luminous Ridge
+/git/webcore/Quasar/Fable Obsidian Outpost
+/git/webcore/Quasar/Fable Ember Harbor
+/git/webcore/Quasar/Fable Gilded Ridge
+/git/webcore/Quasar/Fable Ash Citadel
+/git/webcore/Quasar/Fable Dawn Anchor
+/git/webcore/Quasar/Fable Juniper Canopy
+/git/webcore/Quasar/Fable Iron Sanctum
+/git/webcore/Quasar/Fable Iron Ridge
+/git/webcore/Quasar/Fable Nimble Keep
+/git/webcore/Quasar/Fable Gilded Sanctum
+/git/webcore/Quasar/Fable Sable Market
+/git/webcore/Quasar/Fable Sable Bridge
+/git/webcore/Quasar/Fable Keen Harbor
+/git/webcore/Quasar/Fable Rust Bridge
+/git/webcore/Quasar/Fable Cobalt Harbor
+/git/webcore/Quasar/Fable Quiet Anchor
+/git/webcore/Quasar/Fable Pale Junction
+/git/webcore/Quasar/Fable Keen Cavern
+/git/webcore/Quasar/Fable Ember Ridge
+/git/webcore/Quasar/Fable Juniper Workshop
+/git/webcore/Quasar/Fable Verdant Citadel
+/git/webcore/Quasar/Fable Juniper Ridge
+/git/webcore/Quasar/Fable Juniper Bridge
+/git/webcore/Quasar/Fable Iron Cavern
+/git/webcore/Quasar/Fable Keen Keep
+/git/webcore/Quasar/Fable Ash Anchor
+/git/webcore/Quasar/Fable Misted Cavern
+/git/webcore/Quasar/Fable Nimble Harbor
+/git/webcore/Quasar/Fable Juniper Canopy
+/git/webcore/Quasar/Fable Pale Junction
+/git/webcore/Quasar/Fable Pale Anchor
+/git/webcore/Quasar/Fable Juniper Cavern
+/git/webcore/Quasar/Fable Sable Canopy
+/git/webcore/Quasar/Fable Verdant Junction
+/git/webcore/Quasar/Fable Cobalt Crescent
+/git/webcore/Quasar/Fable Cobalt Harbor
+/git/webcore/Quasar/Fable Pale Hearth
+/git/webcore/Quasar/Fable Quiet Market
+/git/webcore/Quasar/Fable Nimble Crescent
+/git/webcore/Quasar/Fable Luminous Citadel
+/git/webcore/Quasar/Fable Sable Borough
+/git/webcore/Quasar/Fable Juniper Cavern
+/git/webcore/Quasar/Fable Nimble Harbor
+/git/webcore/Quasar/Fable Ash Borough
+/git/webcore/Quasar/Fable Gilded Sanctum
+/git/webcore/Quasar/Fable Keen Quarry
+/git/webcore/Quasar/Fable Quiet Harbor
+/git/webcore/Quasar/Fable Verdant Sanctum
+/git/webcore/Quasar/Fable Rust Crescent
+/git/webcore/Quasar/Fable Sable Junction
+/git/webcore/Quasar/Fable Rust Quarry
+/git/webcore/Quasar/Fable Faint Citadel
+/git/webcore/Quasar/Fable Obsidian Outpost
+/git/webcore/Quasar/Fable Quiet Borough
+/git/webcore/Quasar/Fable Juniper Market
+/git/webcore/Quasar/Fable Luminous Workshop
+/git/webcore/Quasar/Fable Pale Workshop
+/git/webcore/Quasar/Fable Dawn Bridge
+/git/webcore/Quasar/Fable Luminous Quarry
+/git/webcore/Quasar/Fable Verdant Ridge
+/git/webcore/Quasar/Fable Luminous Sanctum
+/git/webcore/Quasar/Fable Ember Isle
+/git/webcore/Rivermouth/Fable Ash Hearth
+/git/webcore/Rivermouth/Fable Hollow Sanctum
+/git/webcore/Rivermouth/Fable Gilded Anchor
+/git/webcore/Rivermouth/Fable Faint Citadel
+/git/webcore/Rivermouth/Fable Quiet Quarry
+/git/webcore/Rivermouth/Fable Hollow Hearth
+/git/webcore/Rivermouth/Fable Luminous Borough
+/git/webcore/Rivermouth/Fable Iron Keep
+/git/webcore/Rivermouth/Fable Hollow Isle
+/git/webcore/Rivermouth/Fable Keen Quarry
+/git/webcore/Rivermouth/Fable Obsidian Bridge
+/git/webcore/Rivermouth/Fable Keen Beacon
+/git/webcore/Rivermouth/Fable Luminous Bridge
+/git/webcore/Rivermouth/Fable Hollow Crescent
+/git/webcore/Rivermouth/Fable Ash Workshop
+/git/webcore/Rivermouth/Fable Ash Isle
+/git/webcore/Rivermouth/Fable Hollow Ridge
+/git/webcore/Rivermouth/Archive Wing/Fable Gilded Borough
+/git/webcore/Rivermouth/Archive Wing/Fable Verdant Bridge
+/git/webcore/Rivermouth/Archive Wing/Fable Keen Market
+/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Hearth
+/git/webcore/Rivermouth/Archive Wing/Fable Keen Sanctum
+/git/webcore/Rivermouth/Archive Wing/Fable Luminous Outpost
+/git/webcore/Rivermouth/Archive Wing/Fable Ash Beacon
+/git/webcore/Rivermouth/Archive Wing/Fable Misted Borough
+/git/webcore/Rivermouth/Archive Wing/Fable Faint Crescent
+/git/webcore/Rivermouth/Archive Wing/Fable Luminous Citadel
+/git/webcore/Rivermouth/Archive Wing/Fable Ember Borough
+/git/webcore/Rivermouth/Archive Wing/Fable Hollow Borough
+/git/webcore/Rivermouth/Archive Wing/Fable Gilded Outpost
+/git/webcore/Rivermouth/Archive Wing/Fable Luminous Ridge
+/git/webcore/Rivermouth/Archive Wing/Fable Pale Workshop
+/git/webcore/Rivermouth/Archive Wing/Fable Ember Ridge
+/git/webcore/Rivermouth/Archive Wing/Fable Sable Bridge
+/git/webcore/Rivermouth/Archive Wing/Fable Iron Outpost
+/git/webcore/Rivermouth/Archive Wing/Fable Hollow Junction
+/git/webcore/Rivermouth/Archive Wing/Fable Ash Workshop
+/git/webcore/Rivermouth/Archive Wing/Fable Juniper Workshop
+/git/webcore/Rivermouth/Archive Wing/Fable Sable Outpost
+/git/webcore/Rivermouth/Archive Wing/Fable Dawn Borough
+/git/webcore/Rivermouth/Archive Wing/Fable Quiet Market
+/git/webcore/Rivermouth/Archive Wing/Fable Sable Lantern
+/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Beacon
+/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Sanctum
+/git/webcore/Rivermouth/Archive Wing/Fable Juniper Anchor
+/git/webcore/Rivermouth/Archive Wing/Fable Pale Ridge
+/git/webcore/Rivermouth/Archive Wing/Fable Faint Borough
+/git/webcore/Rivermouth/Archive Wing/Fable Pale Junction
+/git/webcore/Rivermouth/Archive Wing/Fable Pale Beacon
+/git/webcore/Rivermouth/Archive Wing/Fable Dawn Market
+/git/webcore/Rivermouth/Archive Wing/Fable Misted Bridge
+/git/webcore/Rivermouth/Archive Wing/Fable Gilded Keep
+/git/webcore/Rivermouth/Archive Wing/Fable Iron Hearth
+/git/webcore/Rivermouth/Archive Wing/Fable Dawn Cavern
+/git/webcore/Rivermouth/Archive Wing/Fable Keen Bridge
+/git/webcore/Rivermouth/Archive Wing/Fable Ash Junction
+/git/webcore/Rivermouth/Archive Wing/Fable Ember Canopy
+/git/webcore/Rivermouth/Archive Wing/Fable Luminous Outpost
+/git/webcore/Rivermouth/Archive Wing/Fable Luminous Market
+/git/webcore/Rivermouth/Archive Wing/Fable Misted Junction
+/git/webcore/Rivermouth/Archive Wing/Fable Hollow Isle
+/git/webcore/Rivermouth/Archive Wing/Fable Rust Sanctum
+/git/webcore/Rivermouth/Archive Wing/Fable Sable Market
+/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Quarry
+/git/webcore/Rivermouth/Archive Wing/Fable Obsidian Quarry
+/git/webcore/Rivermouth/Archive Wing/Fable Nimble Ridge
+/git/webcore/Rivermouth/Archive Wing/Fable Verdant Outpost
+/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Sanctum
+/git/webcore/Rivermouth/Archive Wing/Fable Verdant Crescent
+/git/webcore/Rivermouth/Archive Wing/Fable Sable Bridge
+/git/webcore/Rivermouth/Archive Wing/Fable Misted Keep
+/git/webcore/Rivermouth/Archive Wing/Fable Rust Workshop
+/git/webcore/Rivermouth/Archive Wing/Fable Obsidian Bridge
+/git/webcore/Rivermouth/Archive Wing/Fable Sable Crescent
+/git/webcore/Rivermouth/Archive Wing/Fable Sable Quarry
+/git/webcore/Rivermouth/Archive Wing/Fable Ash Canopy
+/git/webcore/Rivermouth/Archive Wing/Fable Quiet Canopy
+/git/webcore/Rivermouth/Archive Wing/Fable Pale Borough
+/git/webcore/Rivermouth/Archive Wing/Fable Hollow Citadel
+/git/webcore/Rivermouth/Archive Wing/Fable Cobalt Junction
+/git/webcore/Rivermouth/Archive Wing/Fable Verdant Borough
+/git/webcore/Rivermouth/Archive Wing/Fable Verdant Junction
+/git/webcore/Sunken Dock/Fable Rust Junction

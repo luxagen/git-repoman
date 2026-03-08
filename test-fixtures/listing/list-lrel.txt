@@ -1,0 +1,255 @@
+Fable Gilded Harbor
+Fable Ember Hearth
+Fable Verdant Lantern
+Amber Vale/Fable Pale Citadel
+Amber Vale/Fable Keen Crescent
+Amber Vale/Fable Brisk Canopy
+Amber Vale/Fable Gilded Citadel
+Juniper Works/Fable Keen Sanctum
+Juniper Works/Fable Obsidian Cavern
+Juniper Works/Fable Juniper Junction
+Juniper Works/Fable Faint Crescent
+Juniper Works/Fable Gilded Lantern
+Juniper Works/Fable Gilded Canopy
+Juniper Works/Fable Misted Workshop
+Kestrel Gate/Fable Rust Ridge
+Night Kite/Fable Faint Lantern
+Night Kite/Fable Rust Workshop
+Night Kite/Fable Keen Quarry
+Night Kite/Fable Ash Workshop
+Obsidian Hub/Circuit Foundry/Fable Sable Workshop
+Obsidian Hub/Circuit Foundry/Fable Gilded Outpost
+Obsidian Hub/Circuit Foundry/Fable Juniper Bridge
+Obsidian Hub/Pocket Atlas/Fable Misted Hearth
+Obsidian Hub/Pocket Atlas/Fable Nimble Ridge
+Obsidian Hub/Pocket Atlas/Fable Quiet Isle
+Obsidian Hub/Pocket Atlas/Fable Luminous Ridge
+Obsidian Hub/Pocket Atlas/Fable Nimble Anchor
+Obsidian Hub/Pocket Atlas/Fable Brisk Bridge
+Obsidian Hub/Pocket Atlas/Fable Brisk Anchor
+Obsidian Hub/Pocket Atlas/Fable Iron Workshop
+Obsidian Hub/Pocket Atlas/Fable Gilded Citadel
+Obsidian Hub/Pocket Atlas/Fable Ash Cavern
+Obsidian Hub/Pocket Atlas/Fable Keen Crescent
+Obsidian Hub/Vault Aster/Fable Gilded Ridge
+Obsidian Hub/Vault Aster/Fable Ember Beacon
+Obsidian Hub/Vault Aster/Fable Pale Beacon
+Obsidian Hub/Vault Aster/Fable Luminous Junction
+Obsidian Hub/Vault Aster/Fable Rust Lantern
+Obsidian Hub/Vault Aster/Fable Pale Crescent
+Obsidian Hub/Vault Aster/Fable Quiet Keep
+Obsidian Hub/Vault Aster/Fable Keen Market
+Obsidian Hub/Vault Aster/Fable Quiet Borough
+Obsidian Hub/Vault Aster/Fable Gilded Crescent
+Obsidian Hub/Vault Aster/Fable Juniper Isle
+Obsidian Hub/Vault Brine/Fable Rust Outpost
+Obsidian Hub/Vault Brine/Fable Juniper Borough
+Obsidian Hub/Vault Brine/Fable Nimble Market
+Obsidian Hub/Vault Brine/Fable Quiet Cavern
+Obsidian Hub/Vault Brine/Fable Hollow Cavern
+Obsidian Hub/Vault Brine/Fable Ash Lantern
+Obsidian Hub/Vault Brine/Fable Juniper Anchor
+Obsidian Hub/Vault Brine/Fable Juniper Quarry
+Obsidian Hub/Vault Brine/Fable Brisk Cavern
+Obsidian Hub/Vault Brine/Fable Iron Anchor
+Obsidian Hub/Vault Brine/Fable Faint Ridge
+Obsidian Hub/Vault Brine/Fable Rust Sanctum
+Quasar/Fable Nimble Isle
+Quasar/Fable Quiet Harbor
+Quasar/Fable Hollow Crescent
+Quasar/Fable Luminous Citadel
+Quasar/Fable Ember Hearth
+Quasar/Fable Iron Isle
+Quasar/Fable Iron Crescent
+Quasar/Fable Pale Workshop
+Quasar/Fable Sable Beacon
+Quasar/Fable Misted Cavern
+Quasar/Fable Gilded Beacon
+Quasar/Fable Iron Isle
+Quasar/Fable Cobalt Junction
+Quasar/Fable Ember Canopy
+Quasar/Fable Sable Canopy
+Quasar/Fable Rust Sanctum
+Quasar/Fable Brisk Crescent
+Quasar/Fable Ash Harbor
+Quasar/Fable Faint Cavern
+Quasar/Fable Nimble Harbor
+Quasar/Fable Quiet Market
+Quasar/Fable Brisk Quarry
+Quasar/Fable Hollow Anchor
+Quasar/Fable Gilded Outpost
+Quasar/Fable Hollow Market
+Quasar/Fable Obsidian Junction
+Quasar/Fable Iron Keep
+Quasar/Fable Gilded Isle
+Quasar/Fable Nimble Workshop
+Quasar/Fable Luminous Crescent
+Quasar/Fable Pale Bridge
+Quasar/Fable Quiet Sanctum
+Quasar/Fable Keen Hearth
+Quasar/Fable Brisk Lantern
+Quasar/Fable Sable Junction
+Quasar/Fable Nimble Bridge
+Quasar/Fable Ash Quarry
+Quasar/Fable Luminous Sanctum
+Quasar/Fable Ash Quarry
+Quasar/Fable Ember Beacon
+Quasar/Fable Verdant Crescent
+Quasar/Fable Verdant Keep
+Quasar/Fable Nimble Hearth
+Quasar/Fable Keen Canopy
+Quasar/Fable Pale Ridge
+Quasar/Fable Ember Workshop
+Quasar/Fable Nimble Anchor
+Quasar/Fable Iron Lantern
+Quasar/Fable Luminous Workshop
+Quasar/Fable Luminous Crescent
+Quasar/Fable Hollow Outpost
+Quasar/Fable Ash Beacon
+Quasar/Fable Brisk Isle
+Quasar/Fable Luminous Ridge
+Quasar/Fable Obsidian Outpost
+Quasar/Fable Ember Harbor
+Quasar/Fable Gilded Ridge
+Quasar/Fable Ash Citadel
+Quasar/Fable Dawn Anchor
+Quasar/Fable Juniper Canopy
+Quasar/Fable Iron Sanctum
+Quasar/Fable Iron Ridge
+Quasar/Fable Nimble Keep
+Quasar/Fable Gilded Sanctum
+Quasar/Fable Sable Market
+Quasar/Fable Sable Bridge
+Quasar/Fable Keen Harbor
+Quasar/Fable Rust Bridge
+Quasar/Fable Cobalt Harbor
+Quasar/Fable Quiet Anchor
+Quasar/Fable Pale Junction
+Quasar/Fable Keen Cavern
+Quasar/Fable Ember Ridge
+Quasar/Fable Juniper Workshop
+Quasar/Fable Verdant Citadel
+Quasar/Fable Juniper Ridge
+Quasar/Fable Juniper Bridge
+Quasar/Fable Iron Cavern
+Quasar/Fable Keen Keep
+Quasar/Fable Ash Anchor
+Quasar/Fable Misted Cavern
+Quasar/Fable Nimble Harbor
+Quasar/Fable Juniper Canopy
+Quasar/Fable Pale Junction
+Quasar/Fable Pale Anchor
+Quasar/Fable Juniper Cavern
+Quasar/Fable Sable Canopy
+Quasar/Fable Verdant Junction
+Quasar/Fable Cobalt Crescent
+Quasar/Fable Cobalt Harbor
+Quasar/Fable Pale Hearth
+Quasar/Fable Quiet Market
+Quasar/Fable Nimble Crescent
+Quasar/Fable Luminous Citadel
+Quasar/Fable Sable Borough
+Quasar/Fable Juniper Cavern
+Quasar/Fable Nimble Harbor
+Quasar/Fable Ash Borough
+Quasar/[Fieldbook]/Fable Gilded Sanctum
+Quasar/[Fieldbook]/Fable Keen Quarry
+Quasar/[Fieldbook]/Fable Quiet Harbor
+Quasar/[Fieldbook]/Fable Verdant Sanctum
+Quasar/[Fieldbook]/Fable Rust Crescent
+Quasar/[Fieldbook]/Fable Sable Junction
+Quasar/[Fieldbook]/Fable Rust Quarry
+Quasar/[Fieldbook]/Fable Faint Citadel
+Quasar/[Fieldbook]/Fable Obsidian Outpost
+Quasar/[Fieldbook]/Fable Quiet Borough
+Quasar/[Fieldbook]/Fable Juniper Market
+Quasar/[Fieldbook]/Fable Luminous Workshop
+Quasar/[Fieldbook]/Fable Pale Workshop
+Quasar/[Fieldbook]/Fable Dawn Bridge
+Quasar/[Fieldbook]/Fable Luminous Quarry
+Quasar/[Fieldbook]/Fable Verdant Ridge
+Quasar/[Fieldbook]/Fable Luminous Sanctum
+Quasar/[Fieldbook]/Fable Ember Isle
+Rivermouth/Fable Ash Hearth
+Rivermouth/Fable Hollow Sanctum
+Rivermouth/Fable Gilded Anchor
+Rivermouth/Fable Faint Citadel
+Rivermouth/Fable Quiet Quarry
+Rivermouth/Fable Hollow Hearth
+Rivermouth/Fable Luminous Borough
+Rivermouth/Fable Iron Keep
+Rivermouth/Fable Hollow Isle
+Rivermouth/Fable Keen Quarry
+Rivermouth/Fable Obsidian Bridge
+Rivermouth/Fable Keen Beacon
+Rivermouth/Fable Luminous Bridge
+Rivermouth/Fable Hollow Crescent
+Rivermouth/Fable Ash Workshop
+Rivermouth/Fable Ash Isle
+Rivermouth/Fable Hollow Ridge
+Rivermouth/[Archive Wing]/Fable Gilded Borough
+Rivermouth/[Archive Wing]/Fable Verdant Bridge
+Rivermouth/[Archive Wing]/Fable Keen Market
+Rivermouth/[Archive Wing]/Fable Cobalt Hearth
+Rivermouth/[Archive Wing]/Fable Keen Sanctum
+Rivermouth/[Archive Wing]/Fable Luminous Outpost
+Rivermouth/[Archive Wing]/Fable Ash Beacon
+Rivermouth/[Archive Wing]/Fable Misted Borough
+Rivermouth/[Archive Wing]/Fable Faint Crescent
+Rivermouth/[Archive Wing]/Fable Luminous Citadel
+Rivermouth/[Archive Wing]/Fable Ember Borough
+Rivermouth/[Archive Wing]/Fable Hollow Borough
+Rivermouth/[Archive Wing]/Fable Gilded Outpost
+Rivermouth/[Archive Wing]/Fable Luminous Ridge
+Rivermouth/[Archive Wing]/Fable Pale Workshop
+Rivermouth/[Archive Wing]/Fable Ember Ridge
+Rivermouth/[Archive Wing]/Fable Sable Bridge
+Rivermouth/[Archive Wing]/Fable Iron Outpost
+Rivermouth/[Archive Wing]/Fable Hollow Junction
+Rivermouth/[Archive Wing]/Fable Ash Workshop
+Rivermouth/[Archive Wing]/Fable Juniper Workshop
+Rivermouth/[Archive Wing]/Fable Sable Outpost
+Rivermouth/[Archive Wing]/Fable Dawn Borough
+Rivermouth/[Archive Wing]/Fable Quiet Market
+Rivermouth/[Archive Wing]/Fable Sable Lantern
+Rivermouth/[Archive Wing]/Fable Cobalt Beacon
+Rivermouth/[Archive Wing]/Fable Cobalt Sanctum
+Rivermouth/[Archive Wing]/Fable Sable Workshop/Fable Juniper Anchor
+Rivermouth/[Archive Wing]/Fable Dawn Keep/Fable Pale Ridge
+Rivermouth/[Archive Wing]/Fable Dawn Keep/Fable Faint Borough
+Rivermouth/[Archive Wing]/Fable Dawn Keep/Fable Pale Junction
+Rivermouth/[Archive Wing]/Fable Brisk Lantern/Fable Pale Beacon
+Rivermouth/[Archive Wing]/Fable Faint Anchor/Fable Dawn Market
+Rivermouth/[Archive Wing]/Fable Faint Anchor/Fable Misted Bridge
+Rivermouth/[Archive Wing]/Fable Sable Junction/Fable Gilded Keep
+Rivermouth/[Archive Wing]/Fable Sable Junction/Fable Iron Hearth
+Rivermouth/[Archive Wing]/Fable Sable Junction/Fable Dawn Cavern
+Rivermouth/[Archive Wing]/Fable Faint Junction/Fable Keen Bridge
+Rivermouth/[Archive Wing]/Fable Faint Junction/Fable Ash Junction
+Rivermouth/[Archive Wing]/Fable Faint Junction/Fable Ember Canopy
+Rivermouth/[Archive Wing]/Fable Faint Junction/Fable Luminous Outpost
+Rivermouth/[Archive Wing]/Fable Faint Junction/Fable Luminous Market
+Rivermouth/[Archive Wing]/Fable Faint Junction/Fable Misted Junction
+Rivermouth/[Archive Wing]/Fable Faint Junction/Fable Hollow Isle
+Rivermouth/[Archive Wing]/Fable Faint Junction/Fable Rust Sanctum
+Rivermouth/[Archive Wing]/Fable Faint Junction/Fable Sable Market
+Rivermouth/[Archive Wing]/Fable Juniper Bridge/Fable Cobalt Quarry
+Rivermouth/[Archive Wing]/Fable Iron Market/Fable Obsidian Quarry
+Rivermouth/[Archive Wing]/Fable Dawn Hearth/Fable Nimble Ridge
+Rivermouth/[Archive Wing]/Fable Dawn Hearth/Fable Verdant Outpost
+Rivermouth/[Archive Wing]/Fable Dawn Hearth/Fable Cobalt Sanctum
+Rivermouth/[Archive Wing]/Fable Dawn Hearth/Fable Verdant Crescent
+Rivermouth/[Archive Wing]/Fable Dawn Hearth/Fable Sable Bridge
+Rivermouth/[Archive Wing]/Fable Dawn Hearth/Fable Misted Keep
+Rivermouth/[Archive Wing]/Fable Dawn Hearth/Fable Rust Workshop
+Rivermouth/[Archive Wing]/Fable Dawn Hearth/Fable Obsidian Bridge
+Rivermouth/[Archive Wing]/Fable Iron Junction/Fable Sable Crescent
+Rivermouth/[Archive Wing]/Fable Iron Junction/Fable Sable Quarry
+Rivermouth/[Archive Wing]/Fable Iron Junction/Fable Ash Canopy
+Rivermouth/[Archive Wing]/Fable Iron Junction/Fable Quiet Canopy
+Rivermouth/[Archive Wing]/Fable Iron Junction/Fable Pale Borough
+Rivermouth/[Archive Wing]/Fable Iron Junction/Fable Hollow Citadel
+Rivermouth/[Archive Wing]/Fable Iron Junction/Fable Cobalt Junction
+Rivermouth/[Archive Wing]/Fable Iron Junction/Fable Verdant Borough
+Rivermouth/[Archive Wing]/Fable Iron Junction/Fable Verdant Junction
+Sunken Dock/Fable Rust Junction
