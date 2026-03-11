@@ -5,10 +5,10 @@ use std::borrow::Cow;
 use std::io::Write;
 use std::path::Path;
 use anyhow::{Context, Result, anyhow};
-use crate::config::{Config,RepoSpec};
+use crate::config::{Config,RepoValues};
 use crate::invoke;
 
-pub use crate::config::FullRepoSpec;
+pub use crate::config::RepoSpecification;
 
 /// Check if directory is a Git repository root
 pub fn is_dir_repo_root(local_path: &str) -> Result<bool> {
@@ -39,10 +39,10 @@ pub fn init_new(local_path: &str) -> Result<()> {
 }
 
 /// Clone a repository without checking it out
-pub fn clone_repo_no_checkout(repo: &FullRepoSpec) -> Result<()> {
-    println!("Cloning repository \"{}\" into \"{}\"", &repo.remote_url, &repo.local_path);
-	let status = invoke::run_git_status(".", &["clone", "--no-checkout", &repo.remote_url, &repo.local_path])
-		.with_context(|| format!("Failed to execute clone: {}", &repo.remote_url))?;
+pub fn clone_repo_no_checkout(repo: &RepoSpecification) -> Result<()> {
+    println!("Cloning repository \"{}\" into \"{}\"", &repo.remoteURL, &repo.paths.local);
+	let status = invoke::run_git_status(".", &["clone", "--no-checkout", &repo.remoteURL, &repo.paths.local])
+		.with_context(|| format!("Failed to execute clone: {}", &repo.remoteURL))?;
 	if status != 0 {
 		return Err(anyhow!("Git clone failed with exit code: {}", status));
 	}
@@ -51,18 +51,18 @@ pub fn clone_repo_no_checkout(repo: &FullRepoSpec) -> Result<()> {
 
 /// Configure a repository using the provided command
 
-pub fn configure_repo(repo: &FullRepoSpec, config: &Config) -> Result<()> {
+pub fn configure_repo(repo: &RepoSpecification, config: &Config) -> Result<()> {
     execute_config_cmd(repo, config)
 }
 
 // TODO: figure out whether to always fetch
 
 /// Update the remote URL for a repository
-pub fn set_remote(repo: &FullRepoSpec) -> Result<()> {
-    let status = invoke::run_command_silent(&repo.local_path, &["git", "remote", "set-url", "origin", &repo.remote_url])?;
+pub fn set_remote(repo: &RepoSpecification) -> Result<()> {
+    let status = invoke::run_command_silent(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL])?;
     if status == 2 {
         println!("Adding remote origin");
-		crate::invoke::run_git_cmd(&repo.local_path, &["remote", "add", "-f", "origin", &repo.remote_url], None)?;
+		crate::invoke::run_git_cmd(&repo.paths.local, &["remote", "add", "-f", "origin", &repo.remoteURL], None)?;
     } else if status != 0 {
         return Err(anyhow!("Failed to set remote with exit code: {}", status));
     }
@@ -98,8 +98,8 @@ pub fn check_out(local_path: &str) -> Result<()> {
 
 /// Create a new repository
 /// Returns true if this was a virgin (newly initialized) repository that needs a checkout after the remote is added
-pub fn create_remote(repo: &FullRepoSpec, config: &Config, is_repo: bool) -> Result<bool> {
-    println!("Creating new repository at \"{}\" with remote \"{}\"", repo.local_path, repo.remote_url);
+pub fn create_remote(repo: &RepoSpecification, config: &Config, is_repo: bool) -> Result<bool> {
+    println!("Creating new repository at \"{}\" with remote \"{}\"", repo.paths.local, repo.remoteURL);
     
     // Check required configuration
     let rpath_template = if config.rpath_template.is_empty() {
@@ -124,7 +124,7 @@ pub fn create_remote(repo: &FullRepoSpec, config: &Config, is_repo: bool) -> Res
     };
 
     // Construct remote path with .git extension
-    let target_path = if !repo.remote_path.ends_with(".git") {format!("{}.git", repo.remote_path)} else {repo.remote_path.to_string()};
+    let target_path = if !repo.paths.remote.ends_with(".git") {format!("{}.git", repo.paths.remote)} else {repo.paths.remote.to_string()};
 
     // Prompt for confirmation
     print!("About to create remote repo '{}'; are you sure? (y/n) ", target_path);
@@ -219,18 +219,18 @@ pub fn run_git_command(local_path: &str, args_str: &str) -> Result<()> {
 }
 
 /// Execute the CONFIG_CMD in the specified directory
-pub fn execute_config_cmd(repo: &FullRepoSpec, config: &Config) -> Result<()> {
+pub fn execute_config_cmd(repo: &RepoSpecification, config: &Config) -> Result<()> {
     let config_cmd = &config.config_cmd;
     if config_cmd.is_empty() {
         return Ok(()); // No command to execute
     }
 
     // Use shell-escape crate to robustly escape the media_path argument for shell usage
-    let inner_cmd = format!("{config_cmd} {}", shell_escape::unix::escape(Cow::Borrowed(&repo.cfg_param)));
+    let inner_cmd = format!("{config_cmd} {}", shell_escape::unix::escape(Cow::Borrowed(&repo.paths.cfgParam)));
 
 	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
 	// process is MinGW or Cygwin; we must rely on `sh` being on the path
-	let status = invoke::run_in_dir_status(&repo.local_path, &["sh", "-c", inner_cmd.as_str()])
+	let status = invoke::run_in_dir_status(&repo.paths.local, &["sh", "-c", inner_cmd.as_str()])
 		.with_context(|| format!("Failed to execute CONFIG_CMD: {}", inner_cmd))?;
 	if status != 0 {
 		return Err(anyhow!("Config command failed with exit code: {}", status));

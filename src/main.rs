@@ -25,7 +25,7 @@ mod mode;
 mod listfile;
 
 use mode::{PrimaryMode, initialize_operations, get_operations, get_mode_string};
-pub use config::{RepoPaths,RepoSpec,FullRepoSpec,Config};
+pub use config::{RepoPaths,RepoValues,RepoSpecification,Config};
 
 /// Separator character used in listfiles
 const CELL_SEPARATOR: char = '*';
@@ -88,31 +88,31 @@ fn determine_repo_state(path: &str) -> Result<RepoState> {
 
 /// Process a single repository
 #[allow(unused_assignments)] // Stupid compiler
-fn process_repo(config: &Config, repo: &FullRepoSpec) -> Result<()> {
+fn process_repo(config: &Config, repo: &RepoSpecification) -> Result<()> {
 //	eprintln!("{}", );
     // Get operations
     let operations = get_operations();
 
     if operations.list_rrel {
-        println!("{}", repo.remote_path); // NEEDS RREL
+        println!("{}", repo.paths.remote);
         return Ok(());
     }
     
     if operations.list_lrel {
-		println!("{}{}", config.recurse_prefix, repo.local_path);
+		println!("{}{}", config.recurse_prefix, repo.paths.local);
         return Ok(());
     }
 
     if operations.list_rurl {
-        println!("{}", repo.remote_url);
+        println!("{}", repo.remoteURL);
         return Ok(());
     }
 
-    let mut state = determine_repo_state(&repo.local_path)?;
+    let mut state = determine_repo_state(&repo.paths.local)?;
 
     let mut needs_checkout = false;
 
-    println!("{}", format!("{}{}", config.recurse_prefix, repo.local_path).bright_white());
+    println!("{}", format!("{}{}", config.recurse_prefix, repo.paths.local).bright_white());
 
     // State machine for the repository
     loop {
@@ -136,7 +136,7 @@ fn process_repo(config: &Config, repo: &FullRepoSpec) -> Result<()> {
                 }
 
                 // Initialize git repository
-                repository::init_new(&repo.local_path)?;
+                repository::init_new(&repo.paths.local)?;
 
                 // dir: create_remote (is not repo)
                 needs_checkout = repository::create_remote(&repo, config, false)?;
@@ -152,7 +152,7 @@ fn process_repo(config: &Config, repo: &FullRepoSpec) -> Result<()> {
         };
 
         if operations.git {
-            repository::run_git_command(&repo.local_path, &config.git_args)?;
+            repository::run_git_command(&repo.paths.local, &config.git_args)?;
         }
 
         if operations.configure {
@@ -165,7 +165,7 @@ fn process_repo(config: &Config, repo: &FullRepoSpec) -> Result<()> {
         }
     
         if needs_checkout {
-            repository::check_out(&repo.local_path)?;
+            repository::check_out(&repo.paths.local)?;
         }
 
         return Ok(()); // Job done
@@ -213,25 +213,25 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, cfg_param: &str
 //		config.remote_dir);
 
     // Extract raw path components from cells
-	let spec = RepoSpec::from_cells([remote, local, cfg_param]);
+	let spec = RepoValues::new([remote, local, cfg_param]);
 //	eprintln!("!P1 R:_{}_ L:_{}_ P:_{}_", spec.remote_rel, spec.local_rel, spec.cfg_param);
-    let paths = RepoPaths::from_spec(spec, &config);
+    let paths = RepoPaths::new(spec, &config);
 //	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", paths.remote, paths.local, paths.config);
-    let full = FullRepoSpec::from_paths(paths,&config);
+    let full = RepoSpecification::new(paths,&config);
 //	eprintln!("!P3 R:_{}_ L:_{}_ P:_{}_ RU:_{}_", full.remote_path, full.local_path, full.cfg_param, full.remote_url);
 
     // Filter out repositories that are not in or below the current directory
-    if !passes_tree_filter(&config.tree_filter, &full.local_path) {
+    if !passes_tree_filter(&config.tree_filter, &full.paths.local) {
         return Ok(());
     }
     
     if get_operations().debug {
-        eprintln!("Potential target: {}", &full.local_path);
+        eprintln!("Potential target: {}", &full.paths.local);
     }
     
     // Process the repository
     if let Err(err) = process_repo(config, &full) {
-        eprintln!("Error processing {}: {}", &full.local_path, err);
+        eprintln!("Error processing {}: {}", &full.paths.local, err);
     }
     
     Ok(())

@@ -1,82 +1,31 @@
 ﻿// GRM - Git Repository Manager
 // Copyright © luxagen, 2025-present
 
+#![allow(non_snake_case)]
+
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
-pub struct RepoSpec
+pub struct RepoValues
 {
-    pub remote_rel: String,
-    pub local_rel: String,
-    pub cfg_param: String,
-}
-
-fn validate_env_loaded_config(config: &Config, is_recursive: bool) -> Result<()> {
-	fn validate_scalar(name: &str, value: &str) -> Result<()> {
-		if value.contains('\0') || value.contains('\r') || value.contains('\n') {
-			return Err(anyhow!("{} contains an invalid character", name));
-		}
-		if value.starts_with('"') || value.ends_with('"') {
-			return Err(anyhow!("{} appears to be quoted (possible formatting bug): {}", name, value));
-		}
-		Ok(())
-	}
-
-	validate_scalar("CONFIG_FILENAME", &config.config_filename)?;
-	if config.config_filename.is_empty() {
-		return Err(anyhow!("CONFIG_FILENAME must not be empty"));
-	}
-
-	validate_scalar("LIST_FN", &config.list_filename)?;
-	if config.list_filename.is_empty() {
-		return Err(anyhow!("LIST_FN must not be empty"));
-	}
-	if config.list_filename.contains('/') || config.list_filename.contains('\\') {
-		return Err(anyhow!("LIST_FN must be a filename, not a path: {}", config.list_filename));
-	}
-
-	validate_scalar("CONFIG_CMD", &config.config_cmd)?;
-	validate_scalar("RECURSE_PREFIX", &config.recurse_prefix)?;
-	validate_scalar("TREE_FILTER", &config.tree_filter)?;
-
-	validate_scalar("RLOGIN", &config.rlogin)?;
-	validate_scalar("RPATH_BASE", &config.rpath_base)?;
-	validate_scalar("RPATH_TEMPLATE", &config.rpath_template)?;
-	validate_scalar("LOCAL_DIR", &config.local_dir)?;
-	validate_scalar("GM_DIR", &config.gm_dir)?;
-	validate_scalar("REMOTE_DIR", &config.remote_dir)?;
-	validate_scalar("GIT_ARGS", &config.git_args)?;
-
-	if is_recursive {
-		let cwd = std::env::current_dir().context("Failed to get current directory")?;
-		let list_path = cwd.join(&config.list_filename);
-		if !list_path.exists() {
-			return Err(anyhow!(
-				"Recursive invocation directory {} does not contain listfile {}",
-				cwd.display(),
-				config.list_filename
-			));
-		}
-	}
-
-	Ok(())
+    pub remote: String,
+    pub local: String,
+    pub cfgParam: String,
 }
 
 pub struct RepoPaths
 {
     pub remote: String,
     pub local: String,
-    pub config: String,
+    pub cfgParam: String,
 }
 
-pub struct FullRepoSpec {
-    pub remote_path: String,
-    pub remote_url: String,
-    pub local_path: String,
-    pub cfg_param: String, // TODO REMOVE
+pub struct RepoSpecification {
+    pub paths: RepoPaths,
+    pub remoteURL: String,
 }
 
 // Typed configuration values with proper types for each setting
@@ -208,10 +157,10 @@ impl Config {
     }
 }
 
-impl RepoSpec
+impl RepoValues
 {
 	/// Extract raw repository path components from config file cells
-	pub fn from_cells(cells: [&str; 3]) -> Self
+	pub fn new(cells: [&str; 3]) -> Self
 	{
         use regex::Regex;
 
@@ -238,38 +187,36 @@ impl RepoSpec
 		};
 		
 		Self {
-			remote_rel: remote_rel.to_string(),
-			local_rel,
-			cfg_param: media_rel,
+			remote: remote_rel.to_string(),
+			local: local_rel,
+			cfgParam: media_rel,
 		}
 	}
 }
 
 impl RepoPaths
 {
-	pub fn from_spec(spec: RepoSpec,config: &Config) -> Self
+	pub fn new(spec: RepoValues,config: &Config) -> Self
 	{
 		Self
         {
             remote: cat_paths( // TODO do this in one go?
                 &config.rpath_base,
-                &cat_paths(&config.remote_dir, &spec.remote_rel)),
-            local: cat_paths(&config.local_dir, &spec.local_rel),
-            config: cat_paths(&config.gm_dir, &spec.cfg_param),
+                &cat_paths(&config.remote_dir, &spec.remote)),
+            local: cat_paths(&config.local_dir, &spec.local),
+            cfgParam: cat_paths(&config.gm_dir, &spec.cfgParam),
         }
 	}
 }
 
-impl FullRepoSpec {
-    pub fn from_paths(paths: RepoPaths, config: &Config) -> Self {
-        let remote_url = get_remote_url(config, &paths.remote);
+impl RepoSpecification {
+    pub fn new(paths: RepoPaths, config: &Config) -> Self {
+        let remoteURL = get_remote_url(config, &paths.remote);
 
         Self
         {
-            remote_path: paths.remote,
-            remote_url,
-            local_path: paths.local,
-            cfg_param: paths.config,
+            paths,
+            remoteURL,
         }
     }
 }
@@ -345,6 +292,59 @@ fn build_remote_url(rlogin: &str, repo_path: &str) -> String {
     }
 }
 
+fn validate_env_loaded_config(config: &Config, is_recursive: bool) -> Result<()> {
+	fn validate_scalar(name: &str, value: &str) -> Result<()> {
+		if value.contains('\0') || value.contains('\r') || value.contains('\n') {
+			return Err(anyhow!("{} contains an invalid character", name));
+		}
+		if value.starts_with('"') || value.ends_with('"') {
+			return Err(anyhow!("{} appears to be quoted (possible formatting bug): {}", name, value));
+		}
+		Ok(())
+	}
+
+	validate_scalar("CONFIG_FILENAME", &config.config_filename)?;
+	if config.config_filename.is_empty() {
+		return Err(anyhow!("CONFIG_FILENAME must not be empty"));
+	}
+
+	validate_scalar("LIST_FN", &config.list_filename)?;
+	if config.list_filename.is_empty() {
+		return Err(anyhow!("LIST_FN must not be empty"));
+	}
+	if config.list_filename.contains('/') || config.list_filename.contains('\\') {
+		return Err(anyhow!("LIST_FN must be a filename, not a path: {}", config.list_filename));
+	}
+
+	validate_scalar("CONFIG_CMD", &config.config_cmd)?;
+	validate_scalar("RECURSE_PREFIX", &config.recurse_prefix)?;
+	validate_scalar("TREE_FILTER", &config.tree_filter)?;
+
+	validate_scalar("RLOGIN", &config.rlogin)?;
+	validate_scalar("RPATH_BASE", &config.rpath_base)?;
+	validate_scalar("RPATH_TEMPLATE", &config.rpath_template)?;
+	validate_scalar("LOCAL_DIR", &config.local_dir)?;
+	validate_scalar("GM_DIR", &config.gm_dir)?;
+	validate_scalar("REMOTE_DIR", &config.remote_dir)?;
+	validate_scalar("GIT_ARGS", &config.git_args)?;
+
+	if is_recursive {
+		let cwd = std::env::current_dir().context("Failed to get current directory")?;
+		let list_path = cwd.join(&config.list_filename);
+		if !list_path.exists() {
+			return Err(anyhow!(
+				"Recursive invocation directory {} does not contain listfile {}",
+				cwd.display(),
+				config.list_filename
+			));
+		}
+	}
+
+	Ok(())
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -408,15 +408,15 @@ mod tests {
 		config.remote_dir = "".to_string();
 		config.recurse_prefix = "Example/Prefix/".to_string();
 
-		let spec = RepoSpec {
-			remote_rel: "remote".to_string(),
-			local_rel: "Example_Repo".to_string(),
-			cfg_param: "Example_Repo".to_string(),
+		let spec = RepoValues {
+			remote: "remote".to_string(),
+			local: "Example_Repo".to_string(),
+			cfgParam: "Example_Repo".to_string(),
 		};
 
-		let paths = RepoPaths::from_spec(spec, &config);
+		let paths = RepoPaths::new(spec, &config);
 		assert_eq!(paths.local, "local/Example_Repo");
-		assert_eq!(paths.config, "gm/Example_Repo");
+		assert_eq!(paths.cfgParam, "gm/Example_Repo");
 	}
 
 	#[test]
