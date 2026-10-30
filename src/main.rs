@@ -349,6 +349,16 @@ pub fn recurse_listfiles(dir: &Path, config: &Config, mode: &str) -> Result<()> 
     let dir_str = dir_str.trim_end_matches('/');
     let dir_path = Path::new(dir_str);
     
+    // Skip if this directory is outside the tree filter
+    if !config.tree_filter.is_empty() {
+        let dir_abs = dir_path.canonicalize().unwrap_or_else(|_| dir_path.to_path_buf());
+        let dir_str = dir_abs.to_string_lossy().replace('\\', "/");
+        let filter_str = config.tree_filter.replace('\\', "/");
+        if !dir_str.starts_with(&format!("{}/", filter_str)) && dir_str != filter_str {
+            return Ok(());
+        }
+    }
+
     // Read directory entries
     let entries = fs::read_dir(dir_path)
         .with_context(|| format!("Failed to read directory: {}", dir_path.display()))?;
