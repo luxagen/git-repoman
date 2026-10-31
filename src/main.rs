@@ -219,7 +219,7 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, cfg_param: &str
 //		config.remote_dir);
 
     // Extract raw path components from cells
-	let spec = RepoValues::new([remote, local, cfg_param]);
+	let spec = RepoValues::new([remote, local, cfg_param])?;
 //	eprintln!("!P1 R:_{}_ L:_{}_ P:_{}_", spec.remote_rel, spec.local_rel, spec.cfg_param);
     let paths = RepoPaths::new(spec, &config);
 //	eprintln!("!P2 R:_{}_ L:_{}_ P:_{}_", paths.remote, paths.local, paths.config);

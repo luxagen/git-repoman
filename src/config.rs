@@ -9,6 +9,35 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, anyhow};
 
+/// Validate that a path specifier does not contain . or .. elements
+fn validate_path_specifier(value: &str, key: &str) -> Result<()> {
+    for component in value.split('/') {
+        if component == "." || component == ".." {
+            return Err(anyhow!("Path specifier {} contains invalid component '{}'", key, component));
+        }
+    }
+
+    // Local path config items cannot contain path separators
+    match key {
+        "GM_DIR" => {
+            if value.contains('/') || value.contains('\\') {
+                return Err(anyhow!("Local path config {} cannot contain path separator: {}", key, value));
+            }
+        }
+        _ => {}
+    }
+
+    Ok(())
+}
+
+/// Validate that a local repo path does not contain slashes
+fn validate_local_repo_path(value: &str, context: &str) -> Result<()> {
+    if value.contains('/') || value.contains('\\') {
+        return Err(anyhow!("Local repo path {} contains path separator: {}", context, value));
+    }
+    Ok(())
+}
+
 pub struct RepoValues
 {
     pub remote: String,
@@ -39,8 +68,6 @@ annotated_struct!
         rpath_base: String => "RPATH_BASE",
         /// Remote path template for new repositories
         rpath_template: String => "RPATH_TEMPLATE",
-        /// Local base directory for repositories
-        local_dir: String => "LOCAL_DIR",
         /// Media base directory
         gm_dir: String => "GM_DIR",
         /// Remote directory
@@ -63,7 +90,6 @@ impl Config {
             rlogin: String::new(),
             rpath_base: String::new(),
             rpath_template: String::new(),
-            local_dir: String::new(),
             gm_dir: String::new(),
             remote_dir: String::new(),
             git_args: String::new(),
@@ -101,7 +127,8 @@ impl Config {
                 }
                 
                 // Set configuration value
-                self.set_by_key(conf_key, value);
+                self.set_by_key(conf_key, value.clone());
+                validate_path_specifier(&value, conf_key)?;
             }
         }
 
@@ -137,7 +164,10 @@ impl Config {
 
 			match line_result
 			{
-				ParsedLine::Config{key, value} => self.set_by_key(key.as_str(), value),
+				ParsedLine::Config{key, value} => {
+					self.set_by_key(key.as_str(), value.clone());
+					validate_path_specifier(&value, &key)?;
+				},
 				ParsedLine::RepoSpec {..} => {panic!();}, // TODO proper error
 				ParsedLine::Malformed => {panic!();}, // TODO proper error
 				_ => {},
@@ -151,7 +181,7 @@ impl Config {
 impl RepoValues
 {
 	/// Extract raw repository path components from config file cells
-	pub fn new(cells: [&str; 3]) -> Self
+	pub fn new(cells: [&str; 3]) -> Result<Self>
 	{
         use regex::Regex;
 
@@ -170,6 +200,9 @@ impl RepoValues
 			}
 		};
 		
+		// Validate local repo path does not contain slashes
+		validate_local_repo_path(&local_rel, "local")?;
+		
 		// Third cell is media relative path, defaults to local_rel if empty or missing
 		let media_rel = if cells.len() > 2 && !cells[2].is_empty() {
 			cells[2].to_string()
@@ -177,11 +210,14 @@ impl RepoValues
 			local_rel.clone()
 		};
 		
-		Self {
+		// Validate media repo path does not contain slashes
+		validate_local_repo_path(&media_rel, "media")?;
+		
+		Ok(Self {
 			remote: remote_rel.to_string(),
 			local: local_rel,
 			cfgParam: media_rel,
-		}
+		})
 	}
 }
 
@@ -194,7 +230,7 @@ impl RepoPaths
             remote: cat_paths( // TODO do this in one go?
                 &config.rpath_base,
                 &cat_paths(&config.remote_dir, &spec.remote)),
-            local: cat_paths(&config.local_dir, &spec.local),
+            local: spec.local,
             cfgParam: cat_paths(&config.gm_dir, &spec.cfgParam),
         }
 	}
@@ -302,7 +338,6 @@ fn validate_env_loaded_config(config: &Config, is_recursive: bool) -> Result<()>
 	validate_scalar("RLOGIN", &config.rlogin)?;
 	validate_scalar("RPATH_BASE", &config.rpath_base)?;
 	validate_scalar("RPATH_TEMPLATE", &config.rpath_template)?;
-	validate_scalar("LOCAL_DIR", &config.local_dir)?;
 	validate_scalar("GM_DIR", &config.gm_dir)?;
 	validate_scalar("REMOTE_DIR", &config.remote_dir)?;
 	validate_scalar("GIT_ARGS", &config.git_args)?;
@@ -368,7 +403,6 @@ mod tests {
 	#[test]
 	fn repo_paths_do_not_compound_recurse_prefix_by_default() {
 		let mut config = Config::new();
-		config.local_dir = "local".to_string();
 		config.gm_dir = "gm".to_string();
 		config.rpath_base = "rbase".to_string();
 		config.remote_dir = "".to_string();
@@ -381,7 +415,7 @@ mod tests {
 		};
 
 		let paths = RepoPaths::new(spec, &config);
-		assert_eq!(paths.local, "local/Example_Repo");
+		assert_eq!(paths.local, "Example_Repo");
 		assert_eq!(paths.cfgParam, "gm/Example_Repo");
 	}
 
