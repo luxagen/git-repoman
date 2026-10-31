@@ -213,7 +213,7 @@ fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
 fn process_repo_line(config: &Config, local: &str, remote: &str, cfg_param: &str) -> Result<()> {
 
     // Extract raw path components from cells
-	let spec = RepoValues::new([remote, local, cfg_param]);
+	let spec = RepoValues::new([remote, local, cfg_param])?;
     let paths = RepoPaths::new(spec, &config);
     let full = RepoSpecification::new(paths,&config);
 
