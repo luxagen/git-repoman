@@ -37,8 +37,6 @@ annotated_struct!
         config_filename: String => "CONFIG_FILENAME",
         /// List filename
         list_filename: String => "LIST_FN",
-        /// Whether recursion is enabled (1 by default)
-        recurse_enabled: bool => "OPT_RECURSE",
         /// Remote login information (e.g., ssh://user@host)
         rlogin: String => "RLOGIN",
         /// Remote path base directory
@@ -68,7 +66,6 @@ impl Config {
         Self {
             config_filename: ".grm.conf".to_string(),
             list_filename: String::new(),
-            recurse_enabled: true,
             rlogin: String::new(),
             rpath_base: String::new(),
             rpath_template: String::new(),
