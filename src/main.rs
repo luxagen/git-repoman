@@ -315,25 +315,18 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-/// Find directory containing listfile by walking up from current directory
+/// Find directory containing listfile in current directory
 fn find_listfile_dir() -> Result<PathBuf> {
-	let start_dir = env::current_dir()?;
-	let mut current_dir = start_dir.clone();
-    
-    loop {
-        let list_path = current_dir.join(LIST_FILENAME);
-        if list_path.exists() {
-            return Ok(current_dir);
-        }
-        
-        if !current_dir.pop() {
-		return Err(anyhow!(
-			"{} Could not find listfile {} in current directory or any ancestor",
-			start_dir.display(),
-			LIST_FILENAME
-		));
-        }
-    }
+	let current_dir = env::current_dir()?;
+	let list_path = current_dir.join(LIST_FILENAME);
+	if list_path.exists() {
+		return Ok(current_dir);
+	}
+	Err(anyhow!(
+		"{} Could not find listfile {} in current directory",
+		current_dir.display(),
+		LIST_FILENAME
+	))
 }
 
 /// Recursively process subdirectories, spawning new instances of the program
