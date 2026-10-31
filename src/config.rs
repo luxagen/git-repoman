@@ -33,10 +33,6 @@ annotated_struct!
 {
     #[derive(Debug, Clone)]
     pub struct Config {
-        /// Configuration filename (.grm.conf by default)
-        config_filename: String => "CONFIG_FILENAME",
-        /// List filename
-        list_filename: String => "LIST_FN",
         /// Remote login information (e.g., ssh://user@host)
         rlogin: String => "RLOGIN",
         /// Remote path base directory
@@ -64,8 +60,6 @@ impl Config {
     /// Create a new configuration with default values
     pub fn new() -> Self {
         Self {
-            config_filename: ".grm.conf".to_string(),
-            list_filename: String::new(),
             rlogin: String::new(),
             rpath_base: String::new(),
             rpath_template: String::new(),
@@ -96,7 +90,7 @@ impl Config {
                 // For root process, only allow specific variables from environment
                 if !is_recursive {
                     match conf_key {
-                        "CONFIG_FILENAME" | "LIST_FN" | "CONFIG_CMD" => {
+                        "CONFIG_CMD" => {
                             // These are allowed from environment for root process
                         },
                         _ => {
@@ -275,18 +269,6 @@ fn validate_env_loaded_config(config: &Config, is_recursive: bool) -> Result<()>
 		Ok(())
 	}
 
-	validate_scalar("CONFIG_FILENAME", &config.config_filename)?;
-	if config.config_filename.is_empty() {
-		return Err(anyhow!("CONFIG_FILENAME must not be empty"));
-	}
-
-	validate_scalar("LIST_FN", &config.list_filename)?;
-	if config.list_filename.is_empty() {
-		return Err(anyhow!("LIST_FN must not be empty"));
-	}
-	if config.list_filename.contains('/') || config.list_filename.contains('\\') {
-		return Err(anyhow!("LIST_FN must be a filename, not a path: {}", config.list_filename));
-	}
 
 	validate_scalar("CONFIG_CMD", &config.config_cmd)?;
 	validate_scalar("RECURSE_PREFIX", &config.recurse_prefix)?;
@@ -302,12 +284,12 @@ fn validate_env_loaded_config(config: &Config, is_recursive: bool) -> Result<()>
 
 	if is_recursive {
 		let cwd = std::env::current_dir().context("Failed to get current directory")?;
-		let list_path = cwd.join(&config.list_filename);
+		let list_path = cwd.join(crate::LIST_FILENAME);
 		if !list_path.exists() {
 			return Err(anyhow!(
 				"Recursive invocation directory {} does not contain listfile {}",
 				cwd.display(),
-				config.list_filename
+				crate::LIST_FILENAME
 			));
 		}
 	}
@@ -357,19 +339,6 @@ mod tests {
 		assert_eq!(result,"/tmp/repo.git");
 	}
 
-	#[test]
-	fn all_values_does_not_quote_strings() {
-		let mut config = Config::new();
-		config.list_filename = ".grm.repos".to_string();
-		let all = config.all_values();
-		let list_fn = all
-			.iter()
-			.find(|(k, _)| k == "LIST_FN")
-			.map(|(_, v)| v.as_str())
-			.expect("LIST_FN must be present in all_values()");
-		assert_eq!(list_fn, ".grm.repos");
-		assert!(!list_fn.starts_with('"') && !list_fn.ends_with('"'));
-	}
 
 	#[test]
 	fn repo_paths_do_not_compound_recurse_prefix_by_default() {
