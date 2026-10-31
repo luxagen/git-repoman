@@ -30,6 +30,12 @@ pub use config::{RepoPaths,RepoValues,RepoSpecification,Config};
 /// Separator character used in listfiles
 const CELL_SEPARATOR: char = '*';
 
+/// Configuration filename
+const CONFIG_FILENAME: &str = ".grm.conf";
+
+/// List filename
+const LIST_FILENAME: &str = ".grm.repos";
+
 /// Git Repository Manager - Rust implementation
 #[derive(Parser, Debug)]
 #[clap(author, version, about)]
@@ -45,11 +51,11 @@ struct Args {
 
 
 /// Find the nearest configuration file by walking up directories
-fn find_conf_file(config: &Config) -> Result<PathBuf> {
+fn find_conf_file() -> Result<PathBuf> {
     let mut current_dir = env::current_dir()?;
     
     loop {
-        let conf_path = current_dir.join(&config.config_filename);
+        let conf_path = current_dir.join(CONFIG_FILENAME);
         if conf_path.exists() {
             return Ok(conf_path);
         }
@@ -278,16 +284,11 @@ fn main() -> Result<()> {
     let mut config = Config::new();
     
     // Load configuration from file
-    let conf_path = find_conf_file(&config)?;
+    let conf_path = find_conf_file()?;
     config.load_from_file(&conf_path)?;
     
     // Load configuration from environment variables
 	config.load_from_env()?;
-
-    // Require LIST_FN (list_filename) to be set after config processing
-    if config.list_filename.is_empty() {
-        return Err(anyhow!("LIST_FN must be set in {}", config.list_filename));
-    }
     
     // Initialize operations
     initialize_operations(args.mode);
@@ -302,8 +303,8 @@ fn main() -> Result<()> {
     }
     
     // Get listfile directory and path
-    let list_dir = find_listfile_dir(&config)?;
-    let list_path = list_dir.join(&config.list_filename);
+    let list_dir = find_listfile_dir()?;
+    let list_path = list_dir.join(LIST_FILENAME);
     
     // Just like Perl, change to the listfile directory - this simplifies path handling
     env::set_current_dir(&list_dir)?;
@@ -324,22 +325,22 @@ fn main() -> Result<()> {
 }
 
 /// Find directory containing listfile by walking up from current directory
-fn find_listfile_dir(config: &Config) -> Result<PathBuf> {
+fn find_listfile_dir() -> Result<PathBuf> {
 	let start_dir = env::current_dir()?;
 	let mut current_dir = start_dir.clone();
     
     loop {
-        let list_path = current_dir.join(&config.list_filename);
+        let list_path = current_dir.join(LIST_FILENAME);
         if list_path.exists() {
             return Ok(current_dir);
         }
         
         if !current_dir.pop() {
-			return Err(anyhow!(
-				"{} Could not find listfile {} in current directory or any ancestor",
-				start_dir.display(),
-				config.list_filename
-			));
+		return Err(anyhow!(
+			"{} Could not find listfile {} in current directory or any ancestor",
+			start_dir.display(),
+			LIST_FILENAME
+		));
         }
     }
 }
@@ -384,7 +385,7 @@ pub fn recurse_listfiles(dir: &Path, config: &Config, mode: &str) -> Result<()> 
             continue;
         }
         
-        let list_file_path = path.join(&config.list_filename);
+        let list_file_path = path.join(LIST_FILENAME);
         
         if list_file_path.exists() {
             // Recurse by spawning a new process
