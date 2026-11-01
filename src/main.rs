@@ -305,13 +305,9 @@ pub fn recurse_listfiles(dir: &Path, config: &Config, mode: &str) -> Result<()> 
             continue;
         }
         
-        let list_file_path = path.join(LIST_FILENAME);
-        
-        if list_file_path.exists() {
-            // Recurse by spawning a new process
+        if path.join(LIST_FILENAME).is_file() {
+            // Recurse by spawning a new process, which will recurse that directory itself
             fork_for_subdirectory(&path, config, mode)?;
-            
-            // Skip further recursion - the spawned process will handle subdirectories
             continue;
         }
         
