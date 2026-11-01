@@ -231,11 +231,6 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, cfg_param: &str
     let paths = RepoPaths::new(spec, &config);
     let full = RepoSpecification::new(paths,&config);
 
-    // Filter out repositories that are not in or below the current directory
-    if !passes_tree_filter(&config.tree_filter, &full.paths.local) {
-        return Ok(());
-    }
-    
     if get_operations().debug {
         eprintln!("Potential target: {}", &full.paths.local);
     }
@@ -248,39 +243,11 @@ fn process_repo_line(config: &Config, local: &str, remote: &str, cfg_param: &str
     Ok(())
 }
 
-/// Check if a repository local path passes the tree filter
-/// Returns true if there is no filter or if the path is within the filter
-fn passes_tree_filter(tree_filter: &str, local_path: &str) -> bool {
-    // If there's no tree filter, all paths pass
-    if tree_filter.is_empty() {
-        return true;
-    }
-    
-    // Get the absolute path from the current directory
-    let current_dir = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let abs_local_path = current_dir.join(local_path);
-    let abs_local_str = abs_local_path.to_string_lossy().replace('\\', "/");
-    let tree_filter_str = tree_filter.replace('\\', "/");
-    
-    // Check if the absolute path contains our filter string
-    let passes = abs_local_str.contains(&tree_filter_str);
-    
-    if !passes && get_operations().debug {
-        eprintln!("Skipping repository outside tree filter: {} (not in {})", local_path, tree_filter_str);
-    }
-    
-    passes
-}
-
 fn main() -> Result<()> {
 	unsafe
 	{
 		std::env::set_var("MSYS_NO_PATHCONV", "1");
 	}
-    
-    // Save the original working directory to use as a tree filter (like $treeFilter in Perl)
-    let tree_filter = env::current_dir()?;
-    let tree_filter_str = tree_filter.to_string_lossy().to_string();
     
     // Parse command line arguments and initialize globals
     initialise_args();
@@ -305,9 +272,6 @@ fn main() -> Result<()> {
     // Just like Perl, change to the listfile directory - this simplifies path handling
     env::set_current_dir(&list_dir)?;
     
-    // Store original working directory for filtering
-    config.tree_filter = tree_filter_str;
-   
     // Process listfile
     if list_path.exists() {
         if let Err(err) = process_repofile(&mut config, &list_path) {
@@ -348,16 +312,6 @@ pub fn recurse_listfiles(dir: &Path, config: &Config, mode: &str) -> Result<()> 
     let dir_str = dir_str.trim_end_matches('/');
     let dir_path = Path::new(dir_str);
     
-    // Skip if this directory is outside the tree filter
-    if !config.tree_filter.is_empty() {
-        let dir_abs = dir_path.canonicalize().unwrap_or_else(|_| dir_path.to_path_buf());
-        let dir_str = dir_abs.to_string_lossy().replace('\\', "/");
-        let filter_str = config.tree_filter.replace('\\', "/");
-        if !dir_str.starts_with(&format!("{}/", filter_str)) && dir_str != filter_str {
-            return Ok(());
-        }
-    }
-
     // Read directory entries
     let entries = fs::read_dir(dir_path)
         .with_context(|| format!("Failed to read directory: {}", dir_path.display()))?;
