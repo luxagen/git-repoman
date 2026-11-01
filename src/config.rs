@@ -66,8 +66,6 @@ annotated_struct!
         config_cmd: String => "CONFIG_CMD",
         /// Recurse prefix for path display
         recurse_prefix: String => "RECURSE_PREFIX",
-        /// Tree filter path for filtering repositories to current subtree
-        tree_filter: String => "TREE_FILTER",
     }
 }
 
@@ -82,7 +80,6 @@ impl Config {
             remote_dir: String::new(),
             config_cmd: String::new(),
             recurse_prefix: String::new(),
-            tree_filter: String::new(),
         }
     }
 
@@ -320,7 +317,6 @@ fn validate_env_loaded_config(config: &Config, is_recursive: bool) -> Result<()>
 
 	validate_scalar("CONFIG_CMD", &config.config_cmd)?;
 	validate_scalar("RECURSE_PREFIX", &config.recurse_prefix)?;
-	validate_scalar("TREE_FILTER", &config.tree_filter)?;
 
 	validate_scalar("RLOGIN", &config.rlogin)?;
 	validate_scalar("RPATH_BASE", &config.rpath_base)?;
