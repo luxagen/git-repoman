@@ -332,7 +332,7 @@ pub fn recurse_listfiles(dir: &Path, config: &Config, mode: &str) -> Result<()> 
         
         if list_file_path.exists() {
             // Recurse by spawning a new process
-            recurse_to_subdirectory(&path, config, mode)?;
+            fork_for_subdirectory(&path, config, mode)?;
             
             // Skip further recursion - the spawned process will handle subdirectories
             continue;
@@ -346,7 +346,7 @@ pub fn recurse_listfiles(dir: &Path, config: &Config, mode: &str) -> Result<()> 
 }
 
 /// Spawn a new process to handle a subdirectory with a listfile
-fn recurse_to_subdirectory(path: &Path, config: &Config, mode: &str) -> Result<()> {
+fn fork_for_subdirectory(path: &Path, config: &Config, mode: &str) -> Result<()> {
     // Get relative path for constructing the recurse prefix
     let current_dir = env::current_dir()?;
     let path_rel = if let Ok(rel_path) = path.strip_prefix(&current_dir) {
