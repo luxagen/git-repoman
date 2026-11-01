@@ -211,15 +211,6 @@ fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
         };
     }
     
-    // Process subdirectories if recursion is enabled
-    let operations = get_operations();
-    if operations.recurse {
-        let parent_dir = list_path.parent().unwrap_or(Path::new("."));
-		if let Err(err) = recurse_listfiles(parent_dir, config, mode::get_mode_string()) {
-            eprintln!("Error during recursion: {}", err);
-        }
-    }
-    
     Ok(())
 }
 
@@ -274,37 +265,23 @@ fn main() -> Result<()> {
     // Initialize operations
     initialise_operations(get_args().mode);
     
-    // Get listfile directory and path
-    let list_dir = find_listfile_dir()?;
-    let list_path = list_dir.join(LIST_FILENAME);
+    // Check for listfile in current directory
+    let current_dir = env::current_dir()?;
+    let list_path = current_dir.join(LIST_FILENAME);
     
-    // Just like Perl, change to the listfile directory - this simplifies path handling
-    env::set_current_dir(&list_dir)?;
-    
-    // Process listfile
+    // Process listfile if it exists
     if list_path.exists() {
         if let Err(err) = process_repofile(&mut config, &list_path) {
             eprintln!("Error processing repofile: {}", err);
         }
-    } else {
-        eprintln!("No repofile found");
+    }
+    
+    // Recursively process subdirectories for additional listfiles
+    if let Err(err) = recurse_listfiles(&current_dir, &config, mode::get_mode_string()) {
+        eprintln!("Error during recursion: {}", err);
     }
     
     Ok(())
-}
-
-/// Find directory containing listfile in current directory
-fn find_listfile_dir() -> Result<PathBuf> {
-	let current_dir = env::current_dir()?;
-	let list_path = current_dir.join(LIST_FILENAME);
-	if list_path.exists() {
-		return Ok(current_dir);
-	}
-	Err(anyhow!(
-		"{} Could not find listfile {} in current directory",
-		current_dir.display(),
-		LIST_FILENAME
-	))
 }
 
 /// Recursively process subdirectories, spawning new instances of the program
@@ -380,8 +357,16 @@ fn fork_for_subdirectory(path: &Path, config: &Config, mode: &str) -> Result<()>
     
     // Build command to execute in subdirectory with preserved environment
     let mut cmd = std::process::Command::new(exe_path);
-    cmd.arg(mode)
-       .current_dir(path)
+    cmd.arg(mode);
+    
+    // Pass git arguments if in git mode
+    if mode == "git" {
+        for arg in &get_args().args {
+            cmd.arg(arg);
+        }
+    }
+    
+    cmd.current_dir(path)
        // Set the recurse prefix for this level
        .env("GRM_RECURSE_PREFIX", recurse_prefix);
     
