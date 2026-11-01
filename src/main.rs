@@ -293,14 +293,9 @@ pub fn recurse_listfiles(dir: &Path, config: &Config, mode: &str) -> Result<()> 
         return Ok(());
     }
     
-    // Clean up the path before processing
-    let dir_str = dir.to_string_lossy().to_string();
-    let dir_str = dir_str.trim_end_matches('/');
-    let dir_path = Path::new(dir_str);
-    
     // Read directory entries
-    let entries = fs::read_dir(dir_path)
-        .with_context(|| format!("Failed to read directory: {}", dir_path.display()))?;
+    let entries = fs::read_dir(dir)
+        .with_context(|| format!("Failed to read directory: {}", dir.display()))?;
     
     for entry in entries {
         let entry = entry?;
