@@ -203,12 +203,7 @@ fi
 }
 
 /// Run a git command in the repository (public function called from main.rs)
-pub fn run_git_command(local_path: &str, args_str: &str) -> Result<()> {
-	let args = match shlex::split(args_str) {
-		Some(v) => v,
-		None => return Err(anyhow!("Invalid git args quoting")),
-	};
-
+pub fn run_git_command(local_path: &str, args: &[String]) -> Result<()> {
 	let args: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
 	crate::invoke::run_git_cmd(local_path, &args, None)
 }

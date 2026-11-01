@@ -62,8 +62,6 @@ annotated_struct!
         gm_dir: String => "GM_DIR",
         /// Remote directory
         remote_dir: String => "REMOTE_DIR",
-        /// Git arguments when in git mode
-        git_args: String => "GIT_ARGS",
         /// Command to execute for configuration
         config_cmd: String => "CONFIG_CMD",
         /// Recurse prefix for path display
@@ -82,7 +80,6 @@ impl Config {
             rpath_template: String::new(),
             gm_dir: String::new(),
             remote_dir: String::new(),
-            git_args: String::new(),
             config_cmd: String::new(),
             recurse_prefix: String::new(),
             tree_filter: String::new(),
@@ -305,7 +302,6 @@ fn validate_env_loaded_config(config: &Config, is_recursive: bool) -> Result<()>
 	validate_scalar("RPATH_TEMPLATE", &config.rpath_template)?;
 	validate_scalar("GM_DIR", &config.gm_dir)?;
 	validate_scalar("REMOTE_DIR", &config.remote_dir)?;
-	validate_scalar("GIT_ARGS", &config.git_args)?;
 
 	if is_recursive {
 		let cwd = std::env::current_dir().context("Failed to get current directory")?;

@@ -40,14 +40,14 @@ const LIST_FILENAME: &str = ".grm.repos";
 /// Git Repository Manager - Rust implementation
 #[derive(Parser, Debug)]
 #[clap(author, version, about)]
-struct Args {
+pub struct Args {
     /// Mode of operation
     #[clap(value_enum)]
-    mode: PrimaryMode,
+    pub mode: PrimaryMode,
     
     /// Additional arguments (for git mode)
     #[clap(trailing_var_arg = true)]
-    args: Vec<String>,
+    pub args: Vec<String>,
 }
 
 /// Global ARGS initialized once at startup
@@ -60,7 +60,7 @@ fn initialise_args() {
 
 /// Get a reference to the args
 /// Panics if initialize_args wasn't called first
-fn get_args() -> &'static Args {
+pub fn get_args() -> &'static Args {
     ARGS.get().expect("ARGS not initialized")
 }
 
@@ -172,7 +172,7 @@ fn process_repo(config: &Config, repo: &RepoSpecification) -> Result<()> {
         };
 
         if operations.git {
-            repository::run_git_command(&repo.paths.local, &config.git_args)?;
+            repository::run_git_command(&repo.paths.local, crate::get_args().args.as_slice())?;
         }
 
         if operations.configure {
@@ -297,15 +297,6 @@ fn main() -> Result<()> {
     
     // Initialize operations
     initialise_operations(get_args().mode);
-    
-    // Store git command arguments if in git mode
-    if get_args().mode.to_string() == "git" && !get_args().args.is_empty() {
-		let git_args = get_args().args.iter()
-			.map(|arg| shell_escape::unix::escape(Cow::Borrowed(arg.as_str())).to_string())
-			.collect::<Vec<String>>()
-			.join(" ");
-		config.git_args = git_args;
-    }
     
     // Get listfile directory and path
     let list_dir = find_listfile_dir()?;
