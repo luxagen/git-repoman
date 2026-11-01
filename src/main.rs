@@ -15,6 +15,7 @@ use std::collections::HashMap;
 use url::Url;
 use colored::Colorize;
 use once_cell::sync::OnceCell;
+use anstream::{eprintln,println};
 
 #[macro_use]
 mod annotated_struct;
