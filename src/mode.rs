@@ -131,7 +131,7 @@ static OPERATIONS: OnceCell<Operations> = OnceCell::new();
 static MODE_STRING: OnceCell<String> = OnceCell::new();
 
 /// Initialize the global operations - call this ONCE at startup
-pub fn initialize_operations(primary_mode: PrimaryMode) {
+pub fn initialise_operations(primary_mode: PrimaryMode) {
     // Create Operations from the primary mode
     let operations = Operations::from(primary_mode);
     

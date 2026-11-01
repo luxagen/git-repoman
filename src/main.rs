@@ -24,7 +24,7 @@ mod repository;
 mod mode;
 mod listfile;
 
-use mode::{PrimaryMode, initialize_operations, get_operations, get_mode_string};
+use mode::{PrimaryMode, initialise_operations, get_operations, get_mode_string};
 pub use config::{RepoPaths,RepoValues,RepoSpecification,Config};
 
 /// Separator character used in listfiles
@@ -291,7 +291,7 @@ fn main() -> Result<()> {
 	config.load_from_env()?;
     
     // Initialize operations
-    initialize_operations(args.mode);
+    initialise_operations(get_args().mode);
     
     // Store git command arguments if in git mode
     if args.mode.to_string() == "git" && !args.args.is_empty() {
