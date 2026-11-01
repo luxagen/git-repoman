@@ -123,11 +123,7 @@ impl Config {
 
     /// Load configuration from a file
     pub fn load_from_file(&mut self, path: &Path) -> Result<()> {
-        
-        let iter = crate::listfile::LineIterator::from_file(path)?;
-
-
-        for line_result in iter
+        for line_result in crate::listfile::LineIterator::from_file(path)?
         {
             use crate::listfile::ParsedLine;
 
