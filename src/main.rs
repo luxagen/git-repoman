@@ -14,6 +14,7 @@ use clap::Parser;
 use std::collections::HashMap;
 use url::Url;
 use colored::Colorize;
+use once_cell::sync::OnceCell;
 
 #[macro_use]
 mod annotated_struct;
@@ -49,6 +50,19 @@ struct Args {
     args: Vec<String>,
 }
 
+/// Global ARGS initialized once at startup
+static ARGS: OnceCell<Args> = OnceCell::new();
+
+/// Initialize the global args - call this ONCE at startup
+fn initialise_args() {
+    ARGS.set(Args::parse()).expect("ARGS already initialized");
+}
+
+/// Get a reference to the args
+/// Panics if initialize_args wasn't called first
+fn get_args() -> &'static Args {
+    ARGS.get().expect("ARGS not initialized")
+}
 
 /// Find the nearest configuration file by walking up directories
 fn find_conf_file() -> Result<PathBuf> {
@@ -277,8 +291,8 @@ fn main() -> Result<()> {
     let tree_filter = env::current_dir()?;
     let tree_filter_str = tree_filter.to_string_lossy().to_string();
     
-    // Parse command line arguments
-    let args = Args::parse();
+    // Parse command line arguments and initialize globals
+    initialise_args();
     
     // Create configuration
     let mut config = Config::new();
@@ -294,8 +308,8 @@ fn main() -> Result<()> {
     initialise_operations(get_args().mode);
     
     // Store git command arguments if in git mode
-    if args.mode.to_string() == "git" && !args.args.is_empty() {
-		let git_args = args.args.iter()
+    if get_args().mode.to_string() == "git" && !get_args().args.is_empty() {
+		let git_args = get_args().args.iter()
 			.map(|arg| shell_escape::unix::escape(Cow::Borrowed(arg.as_str())).to_string())
 			.collect::<Vec<String>>()
 			.join(" ");

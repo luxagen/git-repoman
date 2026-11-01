@@ -17,16 +17,6 @@ fn validate_path_specifier(value: &str, key: &str) -> Result<()> {
         }
     }
 
-    // Local path config items cannot contain path separators
-    match key {
-        "GM_DIR" => {
-            if value.contains('/') || value.contains('\\') {
-                return Err(anyhow!("Local path config {} cannot contain path separator: {}", key, value));
-            }
-        }
-        _ => {}
-    }
-
     Ok(())
 }
 
