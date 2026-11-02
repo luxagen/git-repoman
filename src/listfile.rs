@@ -254,10 +254,11 @@ fn parse_config_line(input: &str) -> (ParsedLine, &str) {
 	}
 	
 	// 6. Otherwise map present values into RepoSpec
+	// Note: RepoValues::new handles defaulting of empty fields
 	{
 		let remote = cells[0].clone();
-		let local = cells.get(1).cloned().unwrap_or_else(|| remote.clone());
-		let param = cells.get(2).cloned().unwrap_or_else(|| local.clone());
+		let local = cells.get(1).cloned().unwrap_or_default();
+		let param = cells.get(2).cloned().unwrap_or_default();
 		(
 			ParsedLine::RepoSpec
 			{
