@@ -133,7 +133,7 @@ fn process_repo(config: &Config, repo: &RepoSpecification) -> Result<()> {
 
     let mut needs_checkout = false;
 
-    println!("\n* {}{}", config.recurse_prefix.bright_white(), repo.paths.local.bright_white());
+    println!("* {}{}", config.recurse_prefix.bright_white(), repo.paths.local.bright_white());
 
     // State machine for the repository
     loop {
@@ -174,6 +174,7 @@ fn process_repo(config: &Config, repo: &RepoSpecification) -> Result<()> {
 
         if operations.git {
             repository::run_git_command(&repo.paths.local, crate::get_args().args.as_slice())?;
+            println!();
         }
 
         if operations.configure {
