@@ -28,6 +28,8 @@ struct RealCommandRunner;
 
 impl CommandRunner for RealCommandRunner {
 	fn run_cmd(&self, dir: &str, cmd: &[&str], mode: OutputMode) -> Result<CmdResult> {
+		eprintln!("Running command in {}: {:?}", dir, cmd);
+
 		if cmd.is_empty() {
 			return Err(anyhow!("No command specified"));
 		}
@@ -85,6 +87,8 @@ impl CommandRunner for RealCommandRunner {
 	}
 
 	fn run_with_stdin_inherited(&self, dir: &str, cmd: &[&str], stdin_bytes: &[u8]) -> Result<i32> {
+		eprintln!("Running command in {}: {:?}", dir, cmd);
+
 		if cmd.is_empty() {
 			return Err(anyhow!("No command specified"));
 		}
@@ -145,7 +149,9 @@ pub struct CapturedOutput {
 
 /// Run a command in a specific directory
 pub fn run_in_dir(dir: &str, cmd: &[&str]) -> Result<i32> {
-    if cmd.is_empty() {
+	eprintln!("Running command in {}: {:?}", dir, cmd);
+
+	if cmd.is_empty() {
         return Err(anyhow!("No command specified"));
     }
     
