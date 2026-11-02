@@ -67,8 +67,8 @@ impl From<PrimaryMode> for Operations {
             },
             PrimaryMode::Git => {
                 ops.git = true;
-                ops.set_remote = true;
-                ops.configure = true;
+                ops.set_remote = false;
+                ops.configure = false;
                 ops.recurse = true;
             },
             PrimaryMode::SetRemote => {
