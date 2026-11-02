@@ -320,7 +320,7 @@ fn fork_for_subdirectory(path: &Path, config: &Config, mode: &str) -> Result<()>
     // Get relative path for constructing the recurse prefix
     let current_dir = env::current_dir()?;
     let path_rel = if let Ok(rel_path) = path.strip_prefix(&current_dir) {
-        rel_path.to_string_lossy().to_string()
+        rel_path.to_string_lossy().replace('\\', "/")
     } else {
         path.file_name()
             .and_then(|n| n.to_str())
