@@ -208,24 +208,24 @@ pub fn run_command_silent(dir: &str, cmd: &[&str]) -> Result<i32> {
 }
 
 pub fn run_git_status(dir: &str, args: &[&str]) -> Result<i32> {
-	let mut cmd_args = vec!["git"];
-	cmd_args.extend(args);
-	let output = run_cmd(dir, &cmd_args, OutputMode::Inherit)
-		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd_args))?;
+	let mut cmd = vec!["git"];
+	cmd.extend(args);
+	let output = run_cmd(dir, &cmd, OutputMode::Inherit)
+		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
 	Ok(output.exit_code)
 }
 
 pub fn run_git_capture(local_path: &str, args: &[&str]) -> Result<CapturedOutput> {
-	let mut cmd_args = vec!["git"];
-	cmd_args.extend(args);
-	run_in_dir_capture(local_path, &cmd_args)
+	let mut cmd = vec!["git"];
+	cmd.extend(args);
+	run_in_dir_capture(local_path, &cmd)
 }
 
 pub fn run_git_cmd(local_path: &str, args: &[&str], operation_for_warning: Option<&str>) -> Result<()> {
-	let mut cmd_args = vec!["git"];
-	cmd_args.extend(args);
+	let mut cmd = vec!["git"];
+	cmd.extend(args);
 
-	let status = run_in_dir(local_path, &cmd_args)?;
+	let status = run_in_dir(local_path, &cmd)?;
 	if status != 0 {
 		if let Some(operation) = operation_for_warning {
 			println!("Warning: git {} failed with code {}", operation, status);
