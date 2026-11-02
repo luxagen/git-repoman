@@ -207,8 +207,8 @@ fn process_repofile(config: &mut Config, list_path: &Path) -> Result<()> {
 		{
 			ParsedLine::Config{key, value} => config.set_by_key(&key, value),
 			ParsedLine::RepoSpec{local, remote, param} => process_repo_line(config, &local, &remote, &param)?,
-			ParsedLine::Malformed => (), // TODO error
-			_ => {},
+			ParsedLine::Malformed => return Err(anyhow!("Malformed line")),
+			_ => continue,
         };
     }
     

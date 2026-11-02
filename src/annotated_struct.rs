@@ -19,10 +19,9 @@ macro_rules! annotated_struct {
                     $(
                         $ann => {
                             self.$field = value.parse::<$ty>().unwrap_or_default();
-                            return;
                         }
                     )*
-                    _ => {}
+                    _ => panic!("Unknown configuration key: '{}'", key)
                 }
             }
 
