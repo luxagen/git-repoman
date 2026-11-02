@@ -42,10 +42,10 @@ fn repo_root() -> PathBuf {
 }
 
 #[rstest]
-#[case::list_lrel("test-fixtures/listing","list-lrel")]
-#[case::list_rrel("test-fixtures/listing","list-rrel")]
-#[case::list_rurl("test-fixtures/listing","list-rurl")]
-#[case::set_remote("test-fixtures/listing","set-remote")]
+#[case::list_lrel(".test-fixtures/listing","list-lrel")]
+#[case::list_rrel(".test-fixtures/listing","list-rrel")]
+#[case::list_rurl(".test-fixtures/listing","list-rurl")]
+#[case::set_remote(".test-fixtures/listing","set-remote")]
 fn example_tree_list_outputs_match_golden_files(#[case] fixture_dir: &str,#[case] op: &str) {
 	let golden_name = format!("{}.txt", op);
 	let fixture_dir = repo_root().join(fixture_dir);
