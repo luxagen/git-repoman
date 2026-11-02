@@ -229,16 +229,6 @@ impl RepoSpecification {
 
 /// Get formatted remote URL based on configuration and a fully-compounded remote path
 fn get_remote_url(config: &Config, remote_path: &str) -> String {
-	if config.rpath_base.is_empty()
-	{
-		panic!("RPATH_BASE must exist!");
-	}
-
-//	if config.remote_dir.is_empty()
-//	{
-//		panic!("REMOTE_DIR must exist!");
-//	}
-
 	if config.rlogin.is_empty()
 	{
 		panic!("RLOGIN must exist!");
