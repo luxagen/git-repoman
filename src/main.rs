@@ -353,18 +353,7 @@ fn fork_for_subdirectory(path: &Path, config: &Config, mode: &str) -> Result<()>
     cmd.current_dir(path)
        // Set the recurse prefix for this level
        .env("GRM_RECURSE_PREFIX", recurse_prefix);
-    
-    // Add all config values with GRM_ prefix
-    for (key, value) in config.all_values() {
-        if key == "RECURSE_PREFIX" {
-            // Don't pass recurse prefix (already handled)
-            continue;
-        }
-        
-        // Add GRM_ prefix to all other config variables
-        cmd.env(format!("GRM_{}", key), value);
-    }
-    
+
     // Execute the command with preserved environment
     let status = cmd.status()
         .with_context(|| format!("Failed to spawn recursive process in: {}", path.display()))?;
