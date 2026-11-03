@@ -175,9 +175,9 @@ else
         cd "$TARGET"
         git init --bare -q
     else
-        # Use template
+        # Use template via bare clone (uses hardlinks on same filesystem)
         mkdir -p "$(dirname "$TARGET")"
-        cp -na --reflink=auto "$TEMPLATE" "$TARGET"
+        git clone --bare -q "$TEMPLATE" "$TARGET"
     fi
     exit 0
 fi
