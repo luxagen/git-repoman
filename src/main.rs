@@ -66,13 +66,17 @@ pub fn get_args() -> &'static Args {
 }
 
 /// Find the nearest configuration file by walking up directories
-fn find_conf_file() -> Result<PathBuf> {
-    let mut current_dir = env::current_dir()?;
+fn find_conf_file() -> PathBuf {
+    let mut current_dir = match env::current_dir()
+    {
+        Ok(dir) => dir,
+        Err(_) => panic!("Failed to get current directory"),
+    };
     
     loop {
         let conf_path = current_dir.join(CONFIG_FILENAME);
         if conf_path.exists() {
-            return Ok(conf_path);
+            return conf_path;
         }
         
         if !current_dir.pop() {
@@ -80,7 +84,7 @@ fn find_conf_file() -> Result<PathBuf> {
         }
     }
     
-    Err(anyhow!("Configuration file not found"))
+    panic!("Configuration file not found");
 }
 
 enum RepoState {
@@ -258,7 +262,7 @@ fn main() -> Result<()> {
     let mut config = Config::new();
     
     // Load configuration from file
-    let conf_path = find_conf_file()?;
+    let conf_path = find_conf_file();
     config.load_from_file(&conf_path)?;
     
     // Load configuration from environment variables
