@@ -131,21 +131,26 @@ pub fn set_command_runner_for_test(runner: Arc<dyn CommandRunner>) -> CommandRun
 	CommandRunnerGuard { previous }
 }
 
-pub fn run_cmd(dir: &str, cmd: &[&str], mode: OutputMode) -> Result<CmdResult> {
-	// Early validation
-	if cmd.is_empty() {
-		return Err(anyhow!("No command specified"));
-	}
-
-	let runner = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned");
-	runner.run_cmd(dir, cmd, mode)
-}
-
 pub struct CapturedOutput {
 	pub exit_code: i32,
 	pub stdout: Vec<u8>,
     #[allow(dead_code)]
 	pub stderr: Vec<u8>,
+}
+
+pub fn run_with_stdin_inherited(dir: &str, cmd: &[&str], stdin_bytes: &[u8]) -> Result<i32> {
+	let runner = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned");
+	runner.run_with_stdin_inherited(dir, cmd, stdin_bytes)
+}
+
+pub fn run_in_dir_capture(dir: &str, cmd: &[&str]) -> Result<CapturedOutput> {
+	let result = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned").run_cmd(dir, cmd, OutputMode::Capture)
+		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
+	Ok(CapturedOutput {
+		exit_code: result.exit_code,
+		stdout: result.stdout.unwrap_or_default(),
+		stderr: result.stderr.unwrap_or_default(),
+	})
 }
 
 /// Run a command in a specific directory
@@ -176,23 +181,8 @@ pub fn run_in_dir(dir: &str, cmd: &[&str]) -> Result<i32> {
     Ok(exit_code)
 }
 
-pub fn run_with_stdin_inherited(dir: &str, cmd: &[&str], stdin_bytes: &[u8]) -> Result<i32> {
-	let runner = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned");
-	runner.run_with_stdin_inherited(dir, cmd, stdin_bytes)
-}
-
-pub fn run_in_dir_capture(dir: &str, cmd: &[&str]) -> Result<CapturedOutput> {
-	let result = run_cmd(dir, cmd, OutputMode::Capture)
-		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
-	Ok(CapturedOutput {
-		exit_code: result.exit_code,
-		stdout: result.stdout.unwrap_or_default(),
-		stderr: result.stderr.unwrap_or_default(),
-	})
-}
-
 pub fn run_in_dir_status(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<i32> {
-	let result = run_cmd(dir, cmd, output_mode)
+	let result = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned").run_cmd(dir, cmd, output_mode)
 		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
 	Ok(result.exit_code)
 }
