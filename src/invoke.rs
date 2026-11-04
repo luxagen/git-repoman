@@ -182,21 +182,6 @@ pub fn run_in_dir_status(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Re
 	Ok(result.exit_code)
 }
 
-/// Run a command in a specific directory, capturing output but not displaying it
-/// Returns the exit code
-pub fn run_command_silent(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<i32> {
-	let result = run_cmd(dir, cmd, output_mode)
-		.with_context(|| format!("Failed to execute command: {:?}", cmd))?;
-
-	Ok(result.exit_code)
-}
-
-pub fn run_git_status(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<i32> {
-	let result = run_cmd(dir, &cmd, output_mode)
-		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
-	Ok(result.exit_code)
-}
-
 pub fn run_with_stdin_inherited(dir: &str, cmd: &[&str], stdin_bytes: &[u8]) -> Result<i32> {
 	let runner = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned");
 	runner.run_with_stdin_inherited(dir, cmd, stdin_bytes)

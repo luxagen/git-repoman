@@ -41,7 +41,7 @@ pub fn init_new(local_path: &str) -> Result<()> {
 /// Clone a repository without checking it out
 pub fn clone_repo_no_checkout(repo: &RepoSpecification) -> Result<()> {
     println!("Cloning repository \"{}\" into \"{}\"", &repo.remoteURL, &repo.paths.local);
-	let status = invoke::run_git_status(".", &["git", "clone", "--no-checkout", &repo.remoteURL, &repo.paths.local], invoke::OutputMode::Inherit)
+	let status = invoke::run_in_dir_status(".", &["git", "clone", "--no-checkout", &repo.remoteURL, &repo.paths.local], invoke::OutputMode::Inherit)
 		.with_context(|| format!("Failed to execute clone: {}", &repo.remoteURL))?;
 	if status != 0 {
 		return Err(anyhow!("Git clone failed with exit code: {}", status));
@@ -59,7 +59,7 @@ pub fn configure_repo(repo: &RepoSpecification, config: &Config) -> Result<()> {
 
 /// Update the remote URL for a repository
 pub fn set_remote(repo: &RepoSpecification) -> Result<()> {
-    let status = invoke::run_command_silent(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], invoke::OutputMode::Silent)?;
+    let status = invoke::run_in_dir_status(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], invoke::OutputMode::Silent)?;
     if status == 2 {
         println!("Adding remote origin");
 		crate::invoke::run_git_cmd(&repo.paths.local, &["remote", "add", "-f", "origin", &repo.remoteURL], None)?;
