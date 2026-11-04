@@ -35,22 +35,23 @@ impl CommandRunner for RealCommandRunner {
 		let program = cmd[0];
 		let arguments = &cmd[1..];
 
-		match output_mode {
-			OutputMode::Inherit => {
-				let output = Command::new(program)
+		let output = match output_mode {
+			OutputMode::Inherit =>
+				Command::new(program)
 					.args(arguments)
 					.current_dir(dir)
 					.stdin(Stdio::inherit())
 					.stdout(Stdio::inherit())
 					.stderr(Stdio::inherit())
-					.output()?;
-
-				Ok(CmdResult {
-					exit_code: output.status.code().unwrap_or(-1),
-					stdout: None,
-					stderr: None,
-				})
-			},
+					.output()?,
+			OutputMode::Silent =>
+				Command::new(program)
+					.args(arguments)
+					.current_dir(dir)
+					.stdin(Stdio::null())
+					.stdout(Stdio::null())
+					.stderr(Stdio::null())
+					.output()?,
 			OutputMode::Capture => {
 				let output = Command::new(program)
 					.args(arguments)
@@ -60,28 +61,19 @@ impl CommandRunner for RealCommandRunner {
 					.stderr(Stdio::piped())
 					.output()?;
 
-				Ok(CmdResult {
+				return Ok(CmdResult {
 					exit_code: output.status.code().unwrap_or(-1),
 					stdout: Some(output.stdout),
 					stderr: Some(output.stderr),
-				})
+				});
 			},
-			OutputMode::Silent => {
-				let output = Command::new(program)
-					.args(arguments)
-					.current_dir(dir)
-					.stdin(Stdio::null())
-					.stdout(Stdio::null())
-					.stderr(Stdio::null())
-					.output()?;
+		};
 
-				Ok(CmdResult {
-					exit_code: output.status.code().unwrap_or(-1),
-					stdout: None,
-					stderr: None,
-				})
-			},
-		}
+		Ok(CmdResult {
+			exit_code: output.status.code().unwrap_or(-1),
+			stdout: None,
+			stderr: None,
+		})
 	}
 
 	fn run_with_stdin_inherited(&self, dir: &str, cmd: &[&str], stdin_bytes: &[u8]) -> Result<i32> {
