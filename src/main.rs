@@ -26,7 +26,7 @@ mod repository;
 mod mode;
 mod listfile;
 
-use mode::{PrimaryMode, initialise_operations, get_operations, get_mode_string};
+use mode::{PrimaryMode, initialise_operations, get_operations};
 pub use config::{RepoPaths,RepoValues,RepoSpecification,Config};
 
 /// Separator character used in listfiles
@@ -303,7 +303,7 @@ fn main() -> Result<()> {
     }
     
     // Recursively process subdirectories for additional listfiles
-    if let Err(err) = recurse_listfiles(&current_dir, &config, mode::get_mode_string()) {
+    if let Err(err) = recurse_listfiles(&current_dir, &config, ARGS.get().unwrap().mode) {
         eprintln!("Error during recursion: {}", err);
     }
     
@@ -312,7 +312,7 @@ fn main() -> Result<()> {
 
 /// Recursively process subdirectories, spawning new instances of the program
 /// for directories containing listfiles
-pub fn recurse_listfiles(dir: &Path, config: &Config, mode: &str) -> Result<()> {
+pub fn recurse_listfiles(dir: &Path, config: &Config, mode: PrimaryMode) -> Result<()> {
     // Check if recursion is enabled
     let operations = get_operations();
     if !operations.recurse {
@@ -349,7 +349,7 @@ pub fn recurse_listfiles(dir: &Path, config: &Config, mode: &str) -> Result<()> 
 }
 
 /// Spawn a new process to handle a subdirectory with a listfile
-fn fork_for_subdirectory(path: &Path, config: &Config, mode: &str) -> Result<()> {
+fn fork_for_subdirectory(path: &Path, config: &Config, mode: PrimaryMode) -> Result<()> {
     // Get relative path for constructing the recurse prefix
     let current_dir = env::current_dir()?;
     let path_rel = if let Ok(rel_path) = path.strip_prefix(&current_dir) {
@@ -374,10 +374,10 @@ fn fork_for_subdirectory(path: &Path, config: &Config, mode: &str) -> Result<()>
     
     // Build command to execute in subdirectory with preserved environment
     let mut cmd = std::process::Command::new(exe_path);
-    cmd.arg(mode);
+    cmd.arg(mode.to_string());
     
     // Pass git arguments if in git mode
-    if mode == "git" {
+    if mode == PrimaryMode::Git {
         cmd.args(&crate::get_git_cmd()[1..]);
     }
     
