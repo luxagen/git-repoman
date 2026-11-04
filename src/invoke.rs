@@ -148,8 +148,8 @@ pub fn run_in_dir_capture(dir: &str, cmd: &[&str], output_mode: OutputMode) -> R
 	})
 }
 
-pub fn run_cmd(dir: &str, cmd: &[&str], error_on_failure: bool) -> Result<()> {
-	let status = run_in_dir_capture(dir, cmd, OutputMode::Inherit)?.exit_code;
+pub fn run_cmd(dir: &str, cmd: &[&str], output_mode: OutputMode, error_on_failure: bool) -> Result<()> {
+	let status = run_in_dir_capture(dir, cmd, output_mode)?.exit_code;
 	if status != 0 {
 		if error_on_failure {
 			return Err(
