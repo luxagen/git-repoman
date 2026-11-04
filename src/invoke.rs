@@ -197,19 +197,17 @@ pub fn run_in_dir_status(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Re
 	Ok(result.exit_code)
 }
 
-pub fn run_cmd2(local_path: &str, cmd: &[&str], operation_for_warning: Option<&str>) -> Result<()> {
+pub fn run_cmd2(local_path: &str, cmd: &[&str], error_on_failure: bool) -> Result<()> {
 	let status = run_in_dir(local_path, cmd)?;
 	if status != 0 {
-		if let Some(operation) = operation_for_warning {
-			println!("Warning: git {} failed with code {}", operation, status);
-			return Ok(());
+		if error_on_failure {
+			return Err(
+				anyhow!("Error: '{}' failed with exit code: {}", cmd.join(" "), status)
+			);
 		}
 
-		return Err(anyhow!(
-			"Git command '{}' failed with exit code: {}",
-			cmd.join(" "),
-			status
-		));
+		println!("Warning: `{}` failed with exit code {}", cmd.join(" "), status);
+		return Ok(());
 	}
 
 	Ok(())
