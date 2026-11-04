@@ -14,7 +14,7 @@ pub use crate::config::RepoSpecification;
 pub fn is_dir_repo_root(local_path: &str) -> Result<bool> {
     // Use git rev-parse --git-dir which is more efficient for checking repository existence
     // This is a plumbing command that directly checks for the .git directory
-	let output = invoke::run_capture2(local_path, &["git", "rev-parse", "--git-dir"])
+	let output = invoke::run_in_dir_capture(local_path, &["git", "rev-parse", "--git-dir"])
 		.with_context(|| format!("Failed to check if {} is a git repo root", local_path))?;
     
     // If command succeeds, it's a git repository
