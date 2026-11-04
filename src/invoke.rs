@@ -145,39 +145,14 @@ pub fn run_in_dir_capture(dir: &str, cmd: &[&str]) -> Result<CapturedOutput> {
 	})
 }
 
-/// Run a command in a specific directory
-pub fn run_in_dir(dir: &str, cmd: &[&str]) -> Result<i32> {
-    if cmd.is_empty() {
-        return Err(anyhow!("No command specified"));
-    }
-    
-    let program = cmd[0];
-    let arguments = &cmd[1..];
-    
-    let output = Command::new(program)
-        .args(arguments)
-        .current_dir(dir)
-        .output()
-        .with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
-    
-    let exit_code = output.status.code().unwrap_or(-1);
-    
-    // Only report non-zero exit codes
-    if !output.status.success() {
-        eprintln!("Command {:?} in {} exited with code: {}", cmd, dir, exit_code);
-    }
-    
-    Ok(exit_code)
-}
-
 pub fn run_in_dir_status(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<i32> {
 	let result = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned").run_cmd(dir, cmd, output_mode)
 		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
 	Ok(result.exit_code)
 }
 
-pub fn run_cmd2(local_path: &str, cmd: &[&str], error_on_failure: bool) -> Result<()> {
-	let status = run_in_dir(local_path, cmd)?;
+pub fn run_cmd(local_path: &str, cmd: &[&str], error_on_failure: bool) -> Result<()> {
+	let status = run_in_dir_status(local_path, cmd, OutputMode::Inherit)?;
 	if status != 0 {
 		if error_on_failure {
 			return Err(
