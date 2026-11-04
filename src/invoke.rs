@@ -37,16 +37,16 @@ impl CommandRunner for RealCommandRunner {
 
 		match output_mode {
 			OutputMode::Inherit => {
-				let status = Command::new(program)
+				let output = Command::new(program)
 					.args(arguments)
 					.current_dir(dir)
 					.stdin(Stdio::inherit())
 					.stdout(Stdio::inherit())
 					.stderr(Stdio::inherit())
-					.status()?;
+					.output()?;
 
 				Ok(CmdResult {
-					exit_code: status.code().unwrap_or(-1),
+					exit_code: output.status.code().unwrap_or(-1),
 					stdout: None,
 					stderr: None,
 				})
@@ -165,9 +165,6 @@ pub fn run_in_dir(dir: &str, cmd: &[&str]) -> Result<i32> {
     let output = Command::new(program)
         .args(arguments)
         .current_dir(dir)
-        .stdin(Stdio::inherit())
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
         .output()
         .with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
     
