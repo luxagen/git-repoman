@@ -35,30 +35,33 @@ impl CommandRunner for RealCommandRunner {
 		let program = cmd[0];
 		let arguments = &cmd[1..];
 
+		let stdin_mode = match output_mode {
+			OutputMode::Inherit => Stdio::inherit(),
+			_ => Stdio::null(),
+		};
+
+		let (stdout_mode, stderr_mode) = match output_mode {
+			OutputMode::Inherit => (Stdio::inherit(), Stdio::inherit()),
+			OutputMode::Silent => (Stdio::null(), Stdio::null()),
+			OutputMode::Capture => (Stdio::piped(), Stdio::piped()),
+		};
+
 		let output = match output_mode {
-			OutputMode::Inherit =>
+			OutputMode::Inherit | OutputMode::Silent =>
 				Command::new(program)
 					.args(arguments)
 					.current_dir(dir)
-					.stdin(Stdio::inherit())
-					.stdout(Stdio::inherit())
-					.stderr(Stdio::inherit())
-					.output()?,
-			OutputMode::Silent =>
-				Command::new(program)
-					.args(arguments)
-					.current_dir(dir)
-					.stdin(Stdio::null())
-					.stdout(Stdio::null())
-					.stderr(Stdio::null())
+					.stdin(stdin_mode)
+					.stdout(stdout_mode)
+					.stderr(stderr_mode)
 					.output()?,
 			OutputMode::Capture => {
 				let output = Command::new(program)
 					.args(arguments)
 					.current_dir(dir)
-					.stdin(Stdio::null())
-					.stdout(Stdio::piped())
-					.stderr(Stdio::piped())
+					.stdin(stdin_mode)
+					.stdout(stdout_mode)
+					.stderr(stderr_mode)
 					.output()?;
 
 				return Ok(CmdResult {
@@ -145,8 +148,8 @@ pub fn run_in_dir_capture(dir: &str, cmd: &[&str], output_mode: OutputMode) -> R
 	})
 }
 
-pub fn run_cmd(local_path: &str, cmd: &[&str], error_on_failure: bool) -> Result<()> {
-	let status = run_in_dir_capture(local_path, cmd, OutputMode::Inherit)?.exit_code;
+pub fn run_cmd(dir: &str, cmd: &[&str], error_on_failure: bool) -> Result<()> {
+	let status = run_in_dir_capture(dir, cmd, OutputMode::Inherit)?.exit_code;
 	if status != 0 {
 		if error_on_failure {
 			return Err(
