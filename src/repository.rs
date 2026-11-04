@@ -61,7 +61,6 @@ pub fn configure_repo(repo: &RepoSpecification, config: &Config) -> Result<()> {
 pub fn set_remote(repo: &RepoSpecification) -> Result<()> {
     let status = invoke::run_in_dir_status(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], invoke::OutputMode::Silent)?;
     if status == 2 {
-        println!("Adding remote origin");
 		crate::invoke::run_cmd2(&repo.paths.local, &["git", "remote", "add", "-f", "origin", &repo.remoteURL], true)?;
     } else if status != 0 {
         return Err(anyhow!("Failed to set remote with exit code: {}", status));
