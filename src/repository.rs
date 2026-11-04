@@ -14,38 +14,30 @@ pub use crate::config::RepoSpecification;
 pub fn is_dir_repo_root(local_path: &str) -> Result<bool> {
     // Use git rev-parse --git-dir which is more efficient for checking repository existence
     // This is a plumbing command that directly checks for the .git directory
-	let output = invoke::run_in_dir_capture(local_path, &["git", "rev-parse", "--git-dir"], invoke::OutputMode::Capture)
+	let result = invoke::run_cmd(local_path, &["git", "rev-parse", "--git-dir"], invoke::OutputMode::Capture, invoke::OnExitCode::None)
 		.with_context(|| format!("Failed to check if {} is a git repo root", local_path))?;
     
     // If command succeeds, it's a git repository
-	if output.exit_code != 0 {
+	if result.exit_code != 0 {
         return Ok(false);
     }
     
     // Check if we're at the root (.git dir is directly in this directory)
     // If output is just ".git", we're at the repository root
-	let git_dir = String::from_utf8_lossy(&output.stdout).trim().to_string();
+	let git_dir = String::from_utf8_lossy(&result.stdout).trim().to_string();
     Ok(git_dir == ".git")
 }
 
 /// Initialize a git repository
 pub fn init_new(local_path: &str) -> Result<()> {
     // Initialize git repository
-    let status = invoke::run_in_dir_capture(local_path, &["git", "init", "-q"], invoke::OutputMode::Inherit)?.exit_code;
-    if status != 0 {
-        return Err(anyhow!("Git init failed with exit code: {}", status));
-    }
+    invoke::run_cmd(local_path, &["git", "init", "-q"], invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
     Ok(())
 }
 
 /// Clone a repository without checking it out
 pub fn clone_repo_no_checkout(repo: &RepoSpecification) -> Result<()> {
-    println!("Cloning repository \"{}\" into \"{}\"", &repo.remoteURL, &repo.paths.local);
-	let status = invoke::run_in_dir_capture(".", &["git", "clone", "--no-checkout", &repo.remoteURL, &repo.paths.local], invoke::OutputMode::Inherit)
-		.with_context(|| format!("Failed to execute clone: {}", &repo.remoteURL))?.exit_code;
-	if status != 0 {
-		return Err(anyhow!("Git clone failed with exit code: {}", status));
-	}
+	invoke::run_cmd(".", &["git", "clone", "--no-checkout", &repo.remoteURL, &repo.paths.local], invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
     Ok(())
 }
 
@@ -62,12 +54,7 @@ pub fn configure_repo(repo: &RepoSpecification, config: &Config) -> Result<()> {
 
 	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
 	// process is MinGW or Cygwin; we must rely on `sh` being on the path
-	let status = invoke::run_in_dir_capture(&repo.paths.local, &["sh", "-c", inner_cmd.as_str()], invoke::OutputMode::Inherit)
-		.with_context(|| format!("Failed to execute CONFIG_CMD: {}", inner_cmd))?.exit_code;
-	if status != 0 {
-		return Err(anyhow!("Config command failed with exit code: {}", status));
-	}
-	
+	invoke::run_cmd(&repo.paths.local, &["sh", "-c", inner_cmd.as_str()], invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;	
     Ok(())
 }
 
@@ -75,11 +62,8 @@ pub fn configure_repo(repo: &RepoSpecification, config: &Config) -> Result<()> {
 
 /// Update the remote URL for a repository
 pub fn set_remote(repo: &RepoSpecification) -> Result<()> {
-    let status = invoke::run_in_dir_capture(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], invoke::OutputMode::Silent)?.exit_code;
-    if status == 2 {
-		crate::invoke::run_cmd(&repo.paths.local, &["git", "remote", "add", "-f", "origin", &repo.remoteURL], invoke::OutputMode::Inherit, true)?;
-    } else if status != 0 {
-        return Err(anyhow!("Failed to set remote with exit code: {}", status));
+    if 2 == invoke::run_cmd(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], invoke::OutputMode::Silent, invoke::OnExitCode::Error)?.exit_code {
+		crate::invoke::run_cmd(&repo.paths.local, &["git", "remote", "add", "-f", "origin", &repo.remoteURL], invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
     }
     Ok(())
 }
@@ -91,8 +75,7 @@ pub fn check_out(local_path: &str) -> Result<()> {
     println!("Checking out repository at \"{}\"", local_path);
     
     // Reset to get the working directory in sync with remote
-	crate::invoke::run_cmd(local_path, &["git", "checkout"], invoke::OutputMode::Inherit, false)?;
-
+	crate::invoke::run_cmd(local_path, &["git", "checkout"], invoke::OutputMode::Inherit, invoke::OnExitCode::Warning)?;
     Ok(())
 }
 

@@ -13,6 +13,12 @@ pub enum OutputMode {
 	Silent,
 }
 
+pub enum OnExitCode {
+	None,
+	Warning,
+	Error,
+}
+
 pub struct CmdResult {
 	pub exit_code: i32,
 	pub stdout: Option<Vec<u8>>,
@@ -148,18 +154,15 @@ pub fn run_in_dir_capture(dir: &str, cmd: &[&str], output_mode: OutputMode) -> R
 	})
 }
 
-pub fn run_cmd(dir: &str, cmd: &[&str], output_mode: OutputMode, error_on_failure: bool) -> Result<()> {
-	let status = run_in_dir_capture(dir, cmd, output_mode)?.exit_code;
-	if status != 0 {
-		if error_on_failure {
-			return Err(
-				anyhow!("Error: '{}' failed with exit code: {}", cmd.join(" "), status)
-			);
+pub fn run_cmd(dir: &str, cmd: &[&str], output_mode: OutputMode, on_exit_code: OnExitCode) -> Result<CapturedOutput> {
+	let result = run_in_dir_capture(dir, cmd, output_mode)?;
+	if result.exit_code != 0 {
+		match on_exit_code {
+			OnExitCode::None => (),
+			OnExitCode::Warning => println!("Warning: `{}` failed with exit code {}", cmd.join(" "), result.exit_code),
+			OnExitCode::Error => return Err(anyhow!("Error: '{}' failed with exit code: {}", cmd.join(" "), result.exit_code)),
 		}
-
-		println!("Warning: `{}` failed with exit code {}", cmd.join(" "), status);
-		return Ok(());
 	}
 
-	Ok(())
+	Ok(result)
 }
