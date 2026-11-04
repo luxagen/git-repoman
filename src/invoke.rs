@@ -27,7 +27,7 @@ pub trait CommandRunner: Send + Sync {
 struct RealCommandRunner;
 
 impl CommandRunner for RealCommandRunner {
-	fn run_cmd(&self, dir: &str, cmd: &[&str], mode: OutputMode) -> Result<CmdResult> {
+	fn run_cmd(&self, dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<CmdResult> {
 		if cmd.is_empty() {
 			return Err(anyhow!("No command specified"));
 		}
@@ -35,7 +35,7 @@ impl CommandRunner for RealCommandRunner {
 		let program = cmd[0];
 		let arguments = &cmd[1..];
 
-		match mode {
+		match output_mode {
 			OutputMode::Inherit => {
 				let status = Command::new(program)
 					.args(arguments)
@@ -207,8 +207,8 @@ pub fn run_command_silent(dir: &str, cmd: &[&str]) -> Result<i32> {
 	Ok(output.exit_code)
 }
 
-pub fn run_git_status(dir: &str, cmd: &[&str]) -> Result<i32> {
-	let output = run_cmd(dir, &cmd, OutputMode::Inherit)
+pub fn run_git_status(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<i32> {
+	let output = run_cmd(dir, &cmd, output_mode)
 		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
 	Ok(output.exit_code)
 }

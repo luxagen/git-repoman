@@ -41,7 +41,7 @@ pub fn init_new(local_path: &str) -> Result<()> {
 /// Clone a repository without checking it out
 pub fn clone_repo_no_checkout(repo: &RepoSpecification) -> Result<()> {
     println!("Cloning repository \"{}\" into \"{}\"", &repo.remoteURL, &repo.paths.local);
-	let status = invoke::run_git_status(".", &["git", "clone", "--no-checkout", &repo.remoteURL, &repo.paths.local])
+	let status = invoke::run_git_status(".", &["git", "clone", "--no-checkout", &repo.remoteURL, &repo.paths.local], invoke::OutputMode::Inherit)
 		.with_context(|| format!("Failed to execute clone: {}", &repo.remoteURL))?;
 	if status != 0 {
 		return Err(anyhow!("Git clone failed with exit code: {}", status));
