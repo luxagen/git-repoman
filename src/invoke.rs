@@ -207,9 +207,7 @@ pub fn run_command_silent(dir: &str, cmd: &[&str]) -> Result<i32> {
 	Ok(output.exit_code)
 }
 
-pub fn run_git_status(dir: &str, args: &[&str]) -> Result<i32> {
-	let mut cmd = vec!["git"];
-	cmd.extend(args);
+pub fn run_git_status(dir: &str, cmd: &[&str]) -> Result<i32> {
 	let output = run_cmd(dir, &cmd, OutputMode::Inherit)
 		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
 	Ok(output.exit_code)
