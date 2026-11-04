@@ -132,6 +132,11 @@ pub fn set_command_runner_for_test(runner: Arc<dyn CommandRunner>) -> CommandRun
 }
 
 pub fn run_cmd(dir: &str, cmd: &[&str], mode: OutputMode) -> Result<CmdResult> {
+	// Early validation
+	if cmd.is_empty() {
+		return Err(anyhow!("No command specified"));
+	}
+
 	let runner = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned");
 	runner.run_cmd(dir, cmd, mode)
 }
@@ -195,13 +200,8 @@ pub fn run_in_dir_capture(dir: &str, cmd: &[&str]) -> Result<CapturedOutput> {
 
 /// Run a command in a specific directory, capturing output but not displaying it
 /// Returns the exit code
-pub fn run_command_silent(dir: &str, cmd: &[&str]) -> Result<i32> {
-	// Early validation
-	if cmd.is_empty() {
-		return Err(anyhow!("No command specified"));
-	}
-
-	let output = run_cmd(dir, cmd, OutputMode::Silent)
+pub fn run_command_silent(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<i32> {
+	let output = run_cmd(dir, cmd, output_mode)
 		.with_context(|| format!("Failed to execute command: {:?}", cmd))?;
 
 	Ok(output.exit_code)

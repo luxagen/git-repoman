@@ -59,7 +59,7 @@ pub fn configure_repo(repo: &RepoSpecification, config: &Config) -> Result<()> {
 
 /// Update the remote URL for a repository
 pub fn set_remote(repo: &RepoSpecification) -> Result<()> {
-    let status = invoke::run_command_silent(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL])?;
+    let status = invoke::run_command_silent(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], invoke::OutputMode::Silent)?;
     if status == 2 {
         println!("Adding remote origin");
 		crate::invoke::run_git_cmd(&repo.paths.local, &["remote", "add", "-f", "origin", &repo.remoteURL], None)?;
