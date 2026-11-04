@@ -52,7 +52,23 @@ pub fn clone_repo_no_checkout(repo: &RepoSpecification) -> Result<()> {
 /// Configure a repository using the provided command
 
 pub fn configure_repo(repo: &RepoSpecification, config: &Config) -> Result<()> {
-    execute_config_cmd(repo, config)
+    let config_cmd = &config.config_cmd;
+    if config_cmd.is_empty() {
+        return Ok(()); // No command to execute
+    }
+
+    // Use shell-escape crate to robustly escape the media_path argument for shell usage
+    let inner_cmd = format!("{config_cmd} {}", shell_escape::unix::escape(Cow::Borrowed(&repo.paths.cfgParam)));
+
+	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
+	// process is MinGW or Cygwin; we must rely on `sh` being on the path
+	let status = invoke::run_in_dir_status(&repo.paths.local, &["sh", "-c", inner_cmd.as_str()], invoke::OutputMode::Inherit)
+		.with_context(|| format!("Failed to execute CONFIG_CMD: {}", inner_cmd))?;
+	if status != 0 {
+		return Err(anyhow!("Config command failed with exit code: {}", status));
+	}
+	
+    Ok(())
 }
 
 // TODO: figure out whether to always fetch
@@ -204,25 +220,4 @@ fi
 	}
 
     Ok(!is_repo)
-}
-
-/// Execute the CONFIG_CMD in the specified directory
-pub fn execute_config_cmd(repo: &RepoSpecification, config: &Config) -> Result<()> {
-    let config_cmd = &config.config_cmd;
-    if config_cmd.is_empty() {
-        return Ok(()); // No command to execute
-    }
-
-    // Use shell-escape crate to robustly escape the media_path argument for shell usage
-    let inner_cmd = format!("{config_cmd} {}", shell_escape::unix::escape(Cow::Borrowed(&repo.paths.cfgParam)));
-
-	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
-	// process is MinGW or Cygwin; we must rely on `sh` being on the path
-	let status = invoke::run_in_dir_status(&repo.paths.local, &["sh", "-c", inner_cmd.as_str()], invoke::OutputMode::Inherit)
-		.with_context(|| format!("Failed to execute CONFIG_CMD: {}", inner_cmd))?;
-	if status != 0 {
-		return Err(anyhow!("Config command failed with exit code: {}", status));
-	}
-	
-    Ok(())
 }
