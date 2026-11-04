@@ -144,18 +144,10 @@ pub fn run_with_stdin_inherited(dir: &str, cmd: &[&str], stdin_bytes: &[u8]) -> 
 	runner.run_with_stdin_inherited(dir, cmd, stdin_bytes)
 }
 
-pub fn run_in_dir_capture(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<CapturedOutput> {
+pub fn run_cmd(dir: &str, cmd: &[&str], output_mode: OutputMode, on_exit_code: OnExitCode) -> Result<CapturedOutput> {
 	let result = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned").run_cmd(dir, cmd, output_mode)
 		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
-	Ok(CapturedOutput {
-		exit_code: result.exit_code,
-		stdout: result.stdout.unwrap_or_default(),
-		stderr: result.stderr.unwrap_or_default(),
-	})
-}
 
-pub fn run_cmd(dir: &str, cmd: &[&str], output_mode: OutputMode, on_exit_code: OnExitCode) -> Result<CapturedOutput> {
-	let result = run_in_dir_capture(dir, cmd, output_mode)?;
 	if result.exit_code != 0 {
 		match on_exit_code {
 			OnExitCode::None => (),
@@ -164,5 +156,9 @@ pub fn run_cmd(dir: &str, cmd: &[&str], output_mode: OutputMode, on_exit_code: O
 		}
 	}
 
-	Ok(result)
+	Ok(CapturedOutput {
+		exit_code: result.exit_code,
+		stdout: result.stdout.unwrap_or_default(),
+		stderr: result.stderr.unwrap_or_default(),
+	})
 }
