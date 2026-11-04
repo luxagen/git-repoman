@@ -135,8 +135,8 @@ pub fn run_with_stdin_inherited(dir: &str, cmd: &[&str], stdin_bytes: &[u8]) -> 
 	runner.run_with_stdin_inherited(dir, cmd, stdin_bytes)
 }
 
-pub fn run_in_dir_capture(dir: &str, cmd: &[&str]) -> Result<CapturedOutput> {
-	let result = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned").run_cmd(dir, cmd, OutputMode::Capture)
+pub fn run_in_dir_capture(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<CapturedOutput> {
+	let result = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned").run_cmd(dir, cmd, output_mode)
 		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
 	Ok(CapturedOutput {
 		exit_code: result.exit_code,
@@ -145,14 +145,8 @@ pub fn run_in_dir_capture(dir: &str, cmd: &[&str]) -> Result<CapturedOutput> {
 	})
 }
 
-pub fn run_in_dir_status(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<i32> {
-	let result = COMMAND_RUNNER.read().expect("COMMAND_RUNNER poisoned").run_cmd(dir, cmd, output_mode)
-		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
-	Ok(result.exit_code)
-}
-
 pub fn run_cmd(local_path: &str, cmd: &[&str], error_on_failure: bool) -> Result<()> {
-	let status = run_in_dir_status(local_path, cmd, OutputMode::Inherit)?;
+	let status = run_in_dir_capture(local_path, cmd, OutputMode::Inherit)?.exit_code;
 	if status != 0 {
 		if error_on_failure {
 			return Err(
