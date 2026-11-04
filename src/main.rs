@@ -54,15 +54,34 @@ pub struct Args {
 /// Global ARGS initialized once at startup
 static ARGS: OnceCell<Args> = OnceCell::new();
 
+/// Global GIT_CMD initialized once at startup
+static GIT_CMD: OnceCell<Vec<&'static str>> = OnceCell::new();
+
 /// Initialize the global args - call this ONCE at startup
 fn initialise_args() {
     ARGS.set(Args::parse()).expect("ARGS already initialized");
+    
+    // Initialize GIT_CMD by prepending "git" to args, but only in Git mode
+    let args = ARGS.get().expect("ARGS not initialized");
+    if args.mode == mode::PrimaryMode::Git {
+        let mut git_cmd: Vec<&'static str> = vec!["git"];
+        for arg in &args.args {
+            git_cmd.push(Box::leak(arg.clone().into_boxed_str()));
+        }
+        GIT_CMD.set(git_cmd).expect("GIT_CMD already initialized");
+    }
 }
 
 /// Get a reference to the args
 /// Panics if initialize_args wasn't called first
 pub fn get_args() -> &'static Args {
     ARGS.get().expect("ARGS not initialized")
+}
+
+/// Get a reference to the git command
+/// Panics if initialize_args wasn't called first
+pub fn get_git_cmd() -> &'static [&'static str] {
+    GIT_CMD.get().expect("GIT_CMD not initialized")
 }
 
 /// Find the nearest configuration file by walking up directories
@@ -186,7 +205,7 @@ fn process_repo(config: &Config, repo: &RepoSpecification) -> Result<()> {
         };
 
         if operations.git {
-            repository::run_git_command(&repo.paths.local, crate::get_args().args.as_slice())?;
+            invoke::run_cmd2(&repo.paths.local, crate::get_git_cmd(), None)?;
             println!();
         }
 
@@ -367,9 +386,7 @@ fn fork_for_subdirectory(path: &Path, config: &Config, mode: &str) -> Result<()>
     
     // Pass git arguments if in git mode
     if mode == "git" {
-        for arg in &get_args().args {
-            cmd.arg(arg);
-        }
+        cmd.args(&GIT_CMD.get().unwrap()[1..]);
     }
     
     cmd.current_dir(path)

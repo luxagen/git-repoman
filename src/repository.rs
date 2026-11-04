@@ -14,7 +14,7 @@ pub use crate::config::RepoSpecification;
 pub fn is_dir_repo_root(local_path: &str) -> Result<bool> {
     // Use git rev-parse --git-dir which is more efficient for checking repository existence
     // This is a plumbing command that directly checks for the .git directory
-	let output = invoke::run_git_capture(local_path, &["rev-parse", "--git-dir"])
+	let output = invoke::run_capture2(local_path, &["git", "rev-parse", "--git-dir"])
 		.with_context(|| format!("Failed to check if {} is a git repo root", local_path))?;
     
     // If command succeeds, it's a git repository
@@ -62,7 +62,7 @@ pub fn set_remote(repo: &RepoSpecification) -> Result<()> {
     let status = invoke::run_in_dir_status(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], invoke::OutputMode::Silent)?;
     if status == 2 {
         println!("Adding remote origin");
-		crate::invoke::run_git_cmd(&repo.paths.local, &["remote", "add", "-f", "origin", &repo.remoteURL], None)?;
+		crate::invoke::run_cmd2(&repo.paths.local, &["git", "remote", "add", "-f", "origin", &repo.remoteURL], None)?;
     } else if status != 0 {
         return Err(anyhow!("Failed to set remote with exit code: {}", status));
     }
@@ -76,7 +76,7 @@ pub fn check_out(local_path: &str) -> Result<()> {
     println!("Checking out repository at \"{}\"", local_path);
     
     // Reset to get the working directory in sync with remote
-	crate::invoke::run_git_cmd(local_path, &["checkout"], Some("checkout"))?;
+	crate::invoke::run_cmd2(local_path, &["git", "checkout"], Some("checkout"))?;
     
     Ok(())
 }
@@ -205,12 +205,6 @@ fi
 	}
 
     Ok(!is_repo)
-}
-
-/// Run a git command in the repository (public function called from main.rs)
-pub fn run_git_command(local_path: &str, args: &[String]) -> Result<()> {
-	let args: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
-	crate::invoke::run_git_cmd(local_path, &args, None)
 }
 
 /// Execute the CONFIG_CMD in the specified directory

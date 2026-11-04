@@ -197,17 +197,12 @@ pub fn run_in_dir_status(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Re
 	Ok(result.exit_code)
 }
 
-pub fn run_git_capture(local_path: &str, args: &[&str]) -> Result<CapturedOutput> {
-	let mut cmd = vec!["git"];
-	cmd.extend(args);
-	run_in_dir_capture(local_path, &cmd)
+pub fn run_capture2(local_path: &str, cmd: &[&str]) -> Result<CapturedOutput> {
+	run_in_dir_capture(local_path, cmd)
 }
 
-pub fn run_git_cmd(local_path: &str, args: &[&str], operation_for_warning: Option<&str>) -> Result<()> {
-	let mut cmd = vec!["git"];
-	cmd.extend(args);
-
-	let status = run_in_dir(local_path, &cmd)?;
+pub fn run_cmd2(local_path: &str, cmd: &[&str], operation_for_warning: Option<&str>) -> Result<()> {
+	let status = run_in_dir(local_path, cmd)?;
 	if status != 0 {
 		if let Some(operation) = operation_for_warning {
 			println!("Warning: git {} failed with code {}", operation, status);
@@ -216,7 +211,7 @@ pub fn run_git_cmd(local_path: &str, args: &[&str], operation_for_warning: Optio
 
 		return Err(anyhow!(
 			"Git command '{}' failed with exit code: {}",
-			args.join(" "),
+			cmd.join(" "),
 			status
 		));
 	}
