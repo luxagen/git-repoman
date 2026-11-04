@@ -158,15 +158,20 @@ fn process_repo(config: &Config, repo: &RepoSpecification) -> Result<()> {
 
     let error_suffix = if !operations.clone {
         match state {
-            RepoState::Missing => ": missing",
-            RepoState::Directory => ": not a repository",
+            RepoState::Missing => "missing",
+            RepoState::Directory => "not a repository",
             _ => "",
         }
     } else {
         ""
     };
 
-    println!("* {}{}{}", config.recurse_prefix.bright_white(), repo.paths.local.bright_white(), error_suffix);
+    println!(
+        "* {}{}{}{}",
+        config.recurse_prefix.bright_white(),
+        repo.paths.local.bright_white(),
+        if !error_suffix.is_empty() { ": " } else { "" },
+        error_suffix.bright_red());
 
     // State machine for the repository
     loop {
