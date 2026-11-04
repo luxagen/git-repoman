@@ -171,8 +171,8 @@ pub fn run_in_dir(dir: &str, cmd: &[&str]) -> Result<i32> {
     Ok(exit_code)
 }
 
-pub fn run_in_dir_status(dir: &str, cmd: &[&str]) -> Result<i32> {
-	let result = run_cmd(dir, cmd, OutputMode::Inherit)
+pub fn run_in_dir_status(dir: &str, cmd: &[&str], output_mode: OutputMode) -> Result<i32> {
+	let result = run_cmd(dir, cmd, output_mode)
 		.with_context(|| format!("Failed to execute command in {}: {:?}", dir, cmd))?;
 	Ok(result.exit_code)
 }

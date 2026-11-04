@@ -225,7 +225,7 @@ pub fn execute_config_cmd(repo: &RepoSpecification, config: &Config) -> Result<(
 
 	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
 	// process is MinGW or Cygwin; we must rely on `sh` being on the path
-	let status = invoke::run_in_dir_status(&repo.paths.local, &["sh", "-c", inner_cmd.as_str()])
+	let status = invoke::run_in_dir_status(&repo.paths.local, &["sh", "-c", inner_cmd.as_str()], invoke::OutputMode::Inherit)
 		.with_context(|| format!("Failed to execute CONFIG_CMD: {}", inner_cmd))?;
 	if status != 0 {
 		return Err(anyhow!("Config command failed with exit code: {}", status));
