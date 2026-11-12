@@ -61,10 +61,16 @@ pub fn configure_repo(repo: &RepoSpecification, config: &Config) -> Result<()> {
 
 /// Update the remote URL for a repository
 pub fn set_remote(repo: &RepoSpecification) -> Result<()> {
-    if 2 == invoke::run_cmd(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], None, invoke::OutputMode::Silent, invoke::OnExitCode::Error)?.exit_code {
-		crate::invoke::run_cmd(&repo.paths.local, &["git", "remote", "add", "-f", "origin", &repo.remoteURL], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
+    let status = invoke::run_cmd(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], None, invoke::OutputMode::Silent, invoke::OnExitCode::None)?;
+    match status.exit_code {
+        0 => Ok(()),
+        2 => {
+            // No 'origin' remote exists yet; add it
+            crate::invoke::run_cmd(&repo.paths.local, &["git", "remote", "add", "-f", "origin", &repo.remoteURL], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
+            Ok(())
+        }
+        code => Err(anyhow!("git remote set-url failed with exit code {}", code)),
     }
-    Ok(())
 }
 
 /// Checkout the default branch after cloning
