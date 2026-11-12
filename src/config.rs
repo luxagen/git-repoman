@@ -160,10 +160,13 @@ impl RepoValues
 			// Extract repo name from remote path for default values
 			// Use greedy match to capture the last path component (strips subdirectory prefixes)
 			let re = Regex::new(r"([^/]+)(?:\.git)?$").unwrap();
-			match re.captures(&remote_rel) {
-				Some(caps) => caps.get(1).map_or(String::new(), |m| m.as_str().to_string()),
-				None => String::new(),
-			}
+            let captures = re.captures(&remote_rel);
+            if captures.is_none() || captures.as_ref().unwrap().get(1).is_none() {
+                remote_rel
+            }
+            else {
+                captures.unwrap().get(1).unwrap().as_str()
+            }.to_string()
 		};
 		
 		// Validate local repo path does not contain slashes
