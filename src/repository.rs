@@ -61,24 +61,40 @@ pub fn configure_repo(repo: &RepoSpecification, config: &Config) -> Result<()> {
 
 /// Update the remote URL for a repository
 pub fn set_remote(repo: &RepoSpecification) -> Result<()> {
-    let status = invoke::run_cmd(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], None, invoke::OutputMode::Silent, invoke::OnExitCode::None)?;
-    match status.exit_code {
-        0 => Ok(()),
-        2 => {
-            // No 'origin' remote exists yet; add it
-            crate::invoke::run_cmd(&repo.paths.local, &["git", "remote", "add", "-f", "origin", &repo.remoteURL], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
-            Ok(())
-        }
-        code => Err(anyhow!("git remote set-url failed with exit code {}", code)),
+    let remotes = invoke::run_cmd(&repo.paths.local, &["git", "remote"], None, invoke::OutputMode::Capture, invoke::OnExitCode::Error)?;
+    let has_origin = String::from_utf8_lossy(&remotes.stdout)
+        .lines()
+        .any(|line| line.trim() == "origin");
+
+    if has_origin {
+        invoke::run_cmd(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
+    } else {
+        invoke::run_cmd(&repo.paths.local, &["git", "remote", "add", "-f", "origin", &repo.remoteURL], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
     }
+    Ok(())
 }
 
-/// Checkout the default branch after cloning
+/// Checkout the remote's default branch after cloning or creating a repo.
+/// Creates a local tracking branch at origin/HEAD so the first commit has
+/// the remote HEAD as its parent.
 pub fn check_out(local_path: &str) -> Result<()> {
     println!("Checking out repository at \"{}\"", local_path);
-    
-    // Reset to get the working directory in sync with remote
-	crate::invoke::run_cmd(local_path, &["git", "checkout"], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Warning)?;
+
+    // Ensure origin/HEAD reflects the remote's default branch
+    invoke::run_cmd(local_path, &["git", "remote", "set-head", "origin", "-a"],
+        None, invoke::OutputMode::Silent, invoke::OnExitCode::Warning)?;
+
+    // Resolve e.g. "origin/master" -> "master"
+    let head = invoke::run_cmd(local_path,
+        &["git", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+        None, invoke::OutputMode::Capture, invoke::OnExitCode::Error)?;
+    let origin_head = String::from_utf8_lossy(&head.stdout).trim().to_string();
+    let branch = origin_head.strip_prefix("origin/").unwrap_or(&origin_head).to_string();
+
+    // DWIM: creates a local tracking branch at origin/<branch> when it
+    // doesn't exist yet, then checks it out
+    invoke::run_cmd(local_path, &["git", "checkout", &branch],
+        None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
     Ok(())
 }
 
