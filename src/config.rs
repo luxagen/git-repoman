@@ -159,7 +159,7 @@ impl RepoValues
 		} else {
 			// Extract repo name from remote path for default values
 			// Use greedy match to capture the last path component (strips subdirectory prefixes)
-			let re = Regex::new(r"([^/]+)(?:\.git)?$").unwrap();
+			let re = Regex::new(r"([^/]+?)(?:\.git)?$").unwrap();
             let captures = re.captures(&remote_rel);
             if captures.is_none() || captures.as_ref().unwrap().get(1).is_none() {
                 remote_rel
