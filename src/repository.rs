@@ -159,11 +159,12 @@ fi
 /// Returns true if this was a virgin (newly initialized) repository that needs a checkout after the remote is added
 pub fn create_remote(repo: &RepoSpecification, config: &Config, is_repo: bool) -> Result<bool> {
     // Check required configuration
-    let rpath_template = if config.rpath_template.is_empty() {
+    if config.rpath_template.is_empty() {
         return Err(anyhow!("RPATH_TEMPLATE not set in configuration"));
-    } else {
-        &config.rpath_template
-    };
+    }
+
+    // Compound the template path with RPATH_BASE (absolute templates bypass the base)
+    let template_path = crate::config::cat_paths(&config.rpath_base, &config.rpath_template);
 
     let rlogin = if config.rlogin.is_empty() {
         return Err(anyhow!("RLOGIN not set in configuration"));
@@ -211,7 +212,7 @@ pub fn create_remote(repo: &RepoSpecification, config: &Config, is_repo: bool) -
     let script = format!(r##"#!/bin/bash
 set -e
 TARGET="{target_path}"
-TEMPLATE="{rpath_template}"
+TEMPLATE="{template_path}"
 
 if [ -d "$TARGET" ]; then
     # Check if it's a repo using proper git plumbing command

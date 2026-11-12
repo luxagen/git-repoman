@@ -227,7 +227,7 @@ fn get_remote_url(config: &Config, remote_path: &str) -> String {
 	build_remote_url(&config.rlogin, remote_path)
 }
 
-fn cat_paths(base: &str, rel: &str) -> String {
+pub(crate) fn cat_paths(base: &str, rel: &str) -> String {
     // Absolute paths remain unchanged
     if rel.starts_with('/') || base.is_empty() {
         return rel.to_string();
