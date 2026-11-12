@@ -76,6 +76,70 @@ pub fn check_out(local_path: &str) -> Result<()> {
     Ok(())
 }
 
+const EXIT_REPO_EXISTS: i32 = 89;
+const EXIT_NOT_REPO: i32 = 90;
+const EXIT_IS_FILE: i32 = 91;
+const EXIT_OTHER_FILETYPE: i32 = 92;
+const EXIT_MISSING: i32 = 93;
+const EXIT_REPO_CREATED: i32 = 94;
+
+enum RemoteStatus {
+    Created,
+    Exists,
+    Missing,
+}
+
+fn remote_status_from_exit_code(exit_code: i32, stderr: &[u8], target_path: &str) -> Result<RemoteStatus> {
+    Ok(match exit_code {
+        EXIT_REPO_CREATED => RemoteStatus::Created,
+        EXIT_REPO_EXISTS => RemoteStatus::Exists,
+        EXIT_MISSING => RemoteStatus::Missing,
+        EXIT_NOT_REPO => return Err(anyhow!("Target directory exists but is not a git repository: {}", target_path)),
+        EXIT_IS_FILE => return Err(anyhow!("Target path exists as a regular file: {}", target_path)),
+        EXIT_OTHER_FILETYPE => return Err(anyhow!("Target path exists as a special file (device, pipe, socket, or symlink): {}", target_path)),
+        code => {
+            return Err(anyhow!(
+                "Remote repository status check failed with status {} for {}: {}",
+                code,
+                target_path,
+                String::from_utf8_lossy(stderr).trim()
+            ));
+        }
+    })
+}
+
+fn probe_remote_repo(ssh_host: &str, target_path: &str) -> Result<RemoteStatus> {
+    let script = format!(r##"#!/bin/bash
+TARGET="{target_path}"
+
+if [ -d "$TARGET" ]; then
+    if git -C "$TARGET" rev-parse --git-dir >/dev/null 2>&1; then
+        exit {EXIT_REPO_EXISTS}
+    fi
+    exit {EXIT_NOT_REPO}
+elif [ -e "$TARGET" ]; then
+    if [ -f "$TARGET" ]; then
+        exit {EXIT_IS_FILE}
+    else
+        exit {EXIT_OTHER_FILETYPE}
+    fi
+else
+    exit {EXIT_MISSING}
+fi
+"##);
+
+    let status = invoke::run_cmd(
+        ".",
+        &["ssh", ssh_host, "bash -s"],
+        Some(script.as_bytes()),
+        invoke::OutputMode::Capture,
+        invoke::OnExitCode::None,
+    )
+    .with_context(|| "Failed to probe remote repository")?;
+
+    remote_status_from_exit_code(status.exit_code, &status.stderr, target_path)
+}
+
 // create_remote:
 // 0. if RLOGIN protocol is not SSH or local, abort with "cannot auto-create non-SSH remotes" complaint
 // 1. else is protocol is SSH, connect and pipe in the shell script below
@@ -94,8 +158,6 @@ pub fn check_out(local_path: &str) -> Result<()> {
 /// Create a new repository
 /// Returns true if this was a virgin (newly initialized) repository that needs a checkout after the remote is added
 pub fn create_remote(repo: &RepoSpecification, config: &Config, is_repo: bool) -> Result<bool> {
-    println!("Creating new repository at \"{}\" with remote \"{}\"", repo.paths.local, repo.remoteURL);
-    
     // Check required configuration
     let rpath_template = if config.rpath_template.is_empty() {
         return Err(anyhow!("RPATH_TEMPLATE not set in configuration"));
@@ -121,6 +183,18 @@ pub fn create_remote(repo: &RepoSpecification, config: &Config, is_repo: bool) -
     // Construct remote path with .git extension
     let target_path = if !repo.paths.remote.ends_with(".git") {format!("{}.git", repo.paths.remote)} else {repo.paths.remote.to_string()};
 
+    match probe_remote_repo(ssh_host, &target_path)? {
+        RemoteStatus::Exists => {
+            return Ok(!is_repo);
+        }
+        RemoteStatus::Missing => {}
+        RemoteStatus::Created => {
+            return Err(anyhow!("Remote repository probe unexpectedly reported creation: {}", target_path));
+        }
+    }
+
+    println!("Creating new repository at \"{}\" with remote \"{}\"", repo.paths.local, repo.remoteURL);
+
     // Prompt for confirmation
     print!("About to create remote repo '{}'; are you sure? (y/n) ", target_path);
     std::io::stdout().flush()?;
@@ -133,11 +207,6 @@ pub fn create_remote(repo: &RepoSpecification, config: &Config, is_repo: bool) -
     }
 
     // Create remote repo based on template
-    // Define unique exit codes
-    const EXIT_NOT_REPO: i32 = 90;
-    const EXIT_IS_FILE: i32 = 91;
-    const EXIT_OTHER_FILETYPE: i32 = 92;
-    
     // Script to check and create remote repository
     let script = format!(r##"#!/bin/bash
 set -e
@@ -148,7 +217,7 @@ if [ -d "$TARGET" ]; then
     # Check if it's a repo using proper git plumbing command
     if git -C "$TARGET" rev-parse --git-dir >/dev/null 2>&1; then
         # It's a git repo, success
-        exit 0
+        exit {EXIT_REPO_EXISTS}
     else
         # Directory exists but isn't a repo
         exit {EXIT_NOT_REPO}
@@ -174,30 +243,22 @@ else
         mkdir -p "$(dirname "$TARGET")"
         git clone --bare -q "$TEMPLATE" "$TARGET"
     fi
-    exit 0
+    exit {EXIT_REPO_CREATED}
 fi
 "##);
 
-    let status = invoke::run_cmd(".", &["ssh", ssh_host, "bash -s"], Some(script.as_bytes()), invoke::OutputMode::Inherit, invoke::OnExitCode::Error)
+    let status = invoke::run_cmd(".", &["ssh", ssh_host, "bash -s"], Some(script.as_bytes()), invoke::OutputMode::Capture, invoke::OnExitCode::None)
         .with_context(|| "Failed to spawn SSH command for repository creation")?;
 
-	match status.exit_code {
-		0 => {
-			println!("Repository created successfully");
-		},
-		EXIT_NOT_REPO => {
-			return Err(anyhow!("Target directory exists but is not a git repository: {}", target_path));
-		},
-		EXIT_IS_FILE => {
-			return Err(anyhow!("Target path exists as a regular file: {}", target_path));
-		},
-		EXIT_OTHER_FILETYPE => {
-			return Err(anyhow!("Target path exists as a special file (device, pipe, socket, or symlink): {}", target_path));
-		},
-		_ => {
-			return Err(anyhow!("Remote repository creation failed with status: {}", status.exit_code));
-		}
-	}
+    match remote_status_from_exit_code(status.exit_code, &status.stderr, &target_path)? {
+        RemoteStatus::Created => {
+            println!("Repository created successfully");
+        }
+        RemoteStatus::Exists => (),
+        RemoteStatus::Missing => {
+            return Err(anyhow!("Remote repository disappeared before creation: {}", target_path));
+        }
+    }
 
     Ok(!is_repo)
 }
