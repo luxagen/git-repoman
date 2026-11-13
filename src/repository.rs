@@ -14,38 +14,31 @@ pub use crate::config::RepoSpecification;
 pub fn is_dir_repo_root(local_path: &str) -> Result<bool> {
     // Use git rev-parse --git-dir which is more efficient for checking repository existence
     // This is a plumbing command that directly checks for the .git directory
-	let output = invoke::run_git_capture(local_path, &["rev-parse", "--git-dir"])
+	let result = invoke::run_cmd(local_path, &["git", "rev-parse", "--git-dir"], None, invoke::OutputMode::Capture, invoke::OnExitCode::None)
 		.with_context(|| format!("Failed to check if {} is a git repo root", local_path))?;
     
     // If command succeeds, it's a git repository
-	if output.exit_code != 0 {
+	if result.exit_code != 0 {
         return Ok(false);
     }
     
     // Check if we're at the root (.git dir is directly in this directory)
     // If output is just ".git", we're at the repository root
-	let git_dir = String::from_utf8_lossy(&output.stdout).trim().to_string();
+	let git_dir = String::from_utf8_lossy(&result.stdout).trim().to_string();
     Ok(git_dir == ".git")
 }
 
 /// Initialize a git repository
 pub fn init_new(local_path: &str) -> Result<()> {
     // Initialize git repository
-    let status = invoke::run_in_dir(local_path, &["git", "init", "-q"])?;
-    if status != 0 {
-        return Err(anyhow!("Git init failed with exit code: {}", status));
-    }
+    invoke::run_cmd(local_path, &["git", "init", "-q"], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
     Ok(())
 }
 
 /// Clone a repository without checking it out
 pub fn clone_repo_no_checkout(repo: &RepoSpecification) -> Result<()> {
-	let status = invoke::run_git_status(".", &["clone", "--no-checkout", &repo.remoteURL, &repo.paths.local])
-		.with_context(|| format!("Failed to execute clone: {}", &repo.remoteURL))?;
+	invoke::run_cmd(".", &["git", "clone", "--no-checkout", &repo.remoteURL, &repo.paths.local], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
 
-	if status != 0 {
-		return Err(anyhow!("Git clone failed with exit code: {}", status));
-	}
     Ok(())
 }
 
@@ -62,22 +55,14 @@ pub fn configure_repo(repo: &RepoSpecification, config: &Config) -> Result<()> {
 
 	// We cannot specify the shell's path (e.g. `/bin/bash`) because we might be running on Win32, even if our parent 
 	// process is MinGW or Cygwin; we must rely on `sh` being on the path
-	let status = invoke::run_in_dir_status(&repo.paths.local, &["sh", "-c", inner_cmd.as_str()])
-		.with_context(|| format!("Failed to execute CONFIG_CMD: {}", inner_cmd))?;
-	if status != 0 {
-		return Err(anyhow!("Config command failed with exit code: {}", status));
-	}
-	
+	invoke::run_cmd(&repo.paths.local, &["sh", "-c", inner_cmd.as_str()], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;	
     Ok(())
 }
 
 /// Update the remote URL for a repository
 pub fn set_remote(repo: &RepoSpecification) -> Result<()> {
-    let status = invoke::run_command_silent(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL])?;
-    if status == 2 {
-		crate::invoke::run_git_cmd(&repo.paths.local, &["remote", "add", "-f", "origin", &repo.remoteURL], None)?;
-    } else if status != 0 {
-        return Err(anyhow!("Failed to set remote with exit code: {}", status));
+    if 2 == invoke::run_cmd(&repo.paths.local, &["git", "remote", "set-url", "origin", &repo.remoteURL], None, invoke::OutputMode::Silent, invoke::OnExitCode::Error)?.exit_code {
+		crate::invoke::run_cmd(&repo.paths.local, &["git", "remote", "add", "-f", "origin", &repo.remoteURL], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
     }
     Ok(())
 }
@@ -87,8 +72,7 @@ pub fn check_out(local_path: &str) -> Result<()> {
     println!("Checking out repository at \"{}\"", local_path);
     
     // Reset to get the working directory in sync with remote
-	crate::invoke::run_git_cmd(local_path, &["checkout"], Some("checkout"))?;
-    
+	crate::invoke::run_cmd(local_path, &["git", "checkout"], None, invoke::OutputMode::Inherit, invoke::OnExitCode::Warning)?;
     Ok(())
 }
 
@@ -194,10 +178,10 @@ else
 fi
 "##);
 
-    let status = invoke::run_with_stdin_inherited(".", &["ssh", ssh_host, "bash -s"], script.as_bytes())
+    let status = invoke::run_cmd(".", &["ssh", ssh_host, "bash -s"], Some(script.as_bytes()), invoke::OutputMode::Inherit, invoke::OnExitCode::Error)
         .with_context(|| "Failed to spawn SSH command for repository creation")?;
 
-	match status {
+	match status.exit_code {
 		0 => {
 			println!("Repository created successfully");
 		},
@@ -211,13 +195,9 @@ fi
 			return Err(anyhow!("Target path exists as a special file (device, pipe, socket, or symlink): {}", target_path));
 		},
 		_ => {
-			return Err(anyhow!("Remote repository creation failed with status: {}", status));
+			return Err(anyhow!("Remote repository creation failed with status: {}", status.exit_code));
 		}
 	}
 
     Ok(!is_repo)
-}
-/// Run a git command in the repository (public function called from main.rs)
-pub fn run_git_command(local_path: &str, args: &[&str]) -> Result<()> {
-	crate::invoke::run_git_cmd(local_path, args, None)
 }

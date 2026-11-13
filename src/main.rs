@@ -206,7 +206,7 @@ fn process_repo(config: &Config, repo: &RepoSpecification) -> Result<()> {
         };
 
         if operations.git {
-            repository::run_git_command(&repo.paths.local, crate::get_git_cmd())?;
+            invoke::run_cmd(&repo.paths.local, crate::get_git_cmd(), None, invoke::OutputMode::Inherit, invoke::OnExitCode::Error)?;
             println!();
         }
 
