@@ -218,7 +218,6 @@ fi
     Ok(!is_repo)
 }
 /// Run a git command in the repository (public function called from main.rs)
-pub fn run_git_command(local_path: &str, args: &[String]) -> Result<()> {
-	let args: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
-	crate::invoke::run_git_cmd(local_path, &args, None)
+pub fn run_git_command(local_path: &str, args: &[&str]) -> Result<()> {
+	crate::invoke::run_git_cmd(local_path, args, None)
 }
